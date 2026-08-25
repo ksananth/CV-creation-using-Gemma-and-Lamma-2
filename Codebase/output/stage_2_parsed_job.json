@@ -1,0 +1,24 @@
+{
+  "title": "SENIOR FRONTEND ENGINEER",
+  "company": "FinTech Inc",
+  "location": "San Francisco",
+  "experience_level": "senior",
+  "years_required": "10+",
+  "required_skills": [
+    "Android",
+    "Kotlin",
+    "Python",
+    "Java"
+  ],
+  "preferred_skills": [
+    "Payment systems experience",
+    "Leadership background"
+  ],
+  "responsibilities": [
+    "Design scalable systems",
+    "Lead architecture decisions",
+    "Develop APIs",
+    "Mentor frontend engineers"
+  ],
+  "team_size": ""
+}

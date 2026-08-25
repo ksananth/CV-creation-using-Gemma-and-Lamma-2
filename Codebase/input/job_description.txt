@@ -1,0 +1,22 @@
+SENIOR FRONTEND ENGINEER
+Company: FinTech Inc
+Location: San Francisco
+ 
+ABOUT THE ROLE
+We're seeking a Senior Frontend Engineer...
+ 
+KEY RESPONSIBILITIES
+- Design scalable systems
+- Lead architecture decisions
+- Develop APIs
+- Mentor frontend engineers
+ 
+REQUIRED QUALIFICATIONS
+- 10+ years frontend experience
+- Android, kotlin, Python, Java, or similar
+- AWS knowledge
+- Docker
+ 
+PREFERRED
+- Payment systems experience
+- Leadership background
