@@ -40,6 +40,8 @@ except ImportError as e:
     print(f"[✗] ERROR: Cannot import stage_1_2_extract_parse.py")
     print(f"    Make sure stage_1_2_extract_parse.py is in same folder as main.py")
     print(f"    Error: {e}")
+    print(f"    Interpreter: {sys.executable}")
+    print(f"    Fix: \"{sys.executable}\" -m pip install -r requirements.txt")
     exit(1)
 
 
