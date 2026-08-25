@@ -1,0 +1,60 @@
+{
+  "required": {
+    "matched": [
+      "android",
+      "kotlin",
+      "python",
+      "java"
+    ],
+    "missing": [],
+    "sources": {
+      "android": "skills_list",
+      "kotlin": "skills_list",
+      "python": "skills_list",
+      "java": "skills_list"
+    },
+    "coverage_pct": 100.0
+  },
+  "preferred": {
+    "matched": [],
+    "missing": [
+      "payment systems"
+    ],
+    "sources": {},
+    "coverage_pct": 0.0
+  },
+  "extra": [
+    "php",
+    "angular",
+    "flutter",
+    "aws",
+    "docker",
+    "kubernetes"
+  ],
+  "fabrication_blocklist": [
+    "payment systems"
+  ],
+  "normalized": {
+    "resume_skills": [
+      "kotlin",
+      "android",
+      "php",
+      "angular",
+      "flutter",
+      "python",
+      "java",
+      "aws",
+      "docker",
+      "kubernetes"
+    ],
+    "required_skills": [
+      "android",
+      "kotlin",
+      "python",
+      "java"
+    ],
+    "preferred_skills": [
+      "payment systems"
+    ]
+  }
+}

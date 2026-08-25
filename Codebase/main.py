@@ -36,6 +36,8 @@ sys.stderr.reconfigure(encoding='utf-8')
 try:
     from step_1_2_extract_parse import ExtractResume, ParseJob
     print("[✓] Imported: step_1_2_extract_parse.py")
+    from step_3_match import MatchSkills
+    print("[✓] Imported: step_3_match.py")
 except ImportError as e:
     print(f"[✗] ERROR: Cannot import stage_1_2_extract_parse.py")
     print(f"    Make sure stage_1_2_extract_parse.py is in same folder as main.py")
@@ -135,8 +137,32 @@ class CVOrchestrator:
             import traceback
             traceback.print_exc()
             return
-        
-        
+
+        # ====================================================================
+        # STAGE 3: Match Skills
+        # ====================================================================
+
+        print("\n[*] Running Stage 3...")
+
+        try:
+            matcher = MatchSkills()
+            match_data = matcher.run(resume_data, job_data)
+
+            if not match_data:
+                print("[✗] Stage 3 failed!")
+                return
+
+            with open("output/stage_3_match.json", 'w', encoding='utf-8') as f:
+                json.dump(match_data, f, indent=2)
+            print("[✓] Saved: output/stage_3_match.json")
+
+        except Exception as e:
+            print(f"[✗] ERROR in Stage 3: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+
+
         print("\n" + "="*70)
         print("SUMMARY")
         print("="*70)
@@ -152,14 +178,24 @@ class CVOrchestrator:
         print(f"  Company: {job_data.get('company', 'N/A')}")
         print(f"  Required skills: {len(job_data.get('required_skills', []))}")
         
+        print(f"\nMATCH DATA:")
+        print(f"  Required:  {match_data['required']['coverage_pct']}% "
+              f"({len(match_data['required']['matched'])}/"
+              f"{len(match_data['normalized']['required_skills'])})")
+        print(f"  Preferred: {match_data['preferred']['coverage_pct']}% "
+              f"({len(match_data['preferred']['matched'])}/"
+              f"{len(match_data['normalized']['preferred_skills'])})")
+        print(f"  Gaps: {', '.join(match_data['fabrication_blocklist']) or 'none'}")
+
         print(f"\nOUTPUT FILES:")
         print(f"  ✓ output/stage_1_extracted_resume.json")
         print(f"  ✓ output/stage_2_parsed_job.json")
-        
+        print(f"  ✓ output/stage_3_match.json")
+
         print("\n" + "="*70)
-        print("✅ STAGE 1 & 2 COMPLETE!")
+        print("✅ STAGE 1-3 COMPLETE!")
         print("="*70)
-        print("\nNext: Uncomment stages 3-6 when ready")
+        print("\nNext: build step_4_retrieve.py (RAG evidence retrieval)")
         print("="*70 + "\n")
 
 
