@@ -7,7 +7,7 @@ strong action-verb bullets, consistent formatting), not to match a posting.
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
-from json_utils import extract_json
+from json_utils import invoke_json
 
 PROMPT = PromptTemplate(
     input_variables=["name", "raw_summary", "experience_lines", "skills"],
@@ -33,14 +33,12 @@ Return ONLY valid JSON (no markdown, no explanations):
 }}""",
 )
 
-MAX_ATTEMPTS = 3
-
 
 class ProfessionalCVGenerator:
     """Rewrite an extracted profile into a professional CV using Gemma"""
 
     def __init__(self):
-        self.llm = OllamaLLM(model="gemma:7b", temperature=0.4)
+        self.chain = PROMPT | OllamaLLM(model="gemma:7b", temperature=0.4)
 
     def run(self, profile_data):
         experience = profile_data.get("experience", []) or []
@@ -54,10 +52,4 @@ class ProfessionalCVGenerator:
             ) or "(none provided)",
             "skills": ", ".join(profile_data.get("skills", [])),
         }
-
-        chain = PROMPT | self.llm
-        for _ in range(MAX_ATTEMPTS):
-            data = extract_json(chain.invoke(inputs))
-            if data is not None:
-                return data
-        return None
+        return invoke_json(self.chain, inputs)

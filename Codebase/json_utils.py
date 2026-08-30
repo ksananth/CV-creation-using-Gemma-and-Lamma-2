@@ -39,6 +39,16 @@ def _quote_before_bracket(text):
     return "".join(out)
 
 
+def invoke_json(chain, inputs, attempts=3):
+    """Invoke an LLM chain and parse its JSON output, retrying on failure -
+    Gemma occasionally returns malformed JSON, and a retry usually fixes it."""
+    for _ in range(attempts):
+        data = extract_json(chain.invoke(inputs))
+        if data is not None:
+            return data
+    return None
+
+
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)

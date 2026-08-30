@@ -1,11 +1,19 @@
 {
-  "summary": "Seasoned Frontend Engineer with expertise in Kotlin, Android development, and various frontend frameworks. Skilled in designing scalable systems and leading architecture discussions.",
-  "bullets": [
-    "Led architecture decisions for mobile applications, resulting in improved scalability and performance.",
-    "Developed APIs using Kotlin, enabling seamless integration with backend systems."
+  "summary": "Seasoned frontend engineer with expertise in Kotlin, Android, and various web technologies. Skilled in designing scalable systems, leading architecture discussions, and developing APIs. Passionate about mentoring and fostering the growth of frontend engineers.",
+  "experience": [
+    {
+      "position": "Senior FrontEnd Engineer",
+      "company": "TCS",
+      "duration": "Jan 2011 - Present",
+      "bullets": [
+        "Led architecture discussions and designed scalable systems.",
+        "Developed APIs using relevant technologies.",
+        "Contributed to the mentorship and development of frontend engineers."
+      ]
+    }
   ],
   "ordered_skills": [
-    "Kotlin",
-    "Android"
+    "kotlin",
+    "android"
   ]
 }

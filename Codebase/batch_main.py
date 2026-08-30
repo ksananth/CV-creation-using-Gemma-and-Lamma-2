@@ -15,7 +15,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 from extract_and_parse import ExtractResume
 from generate_profile_cv import ProfessionalCVGenerator
 from quality_check import check_extraction, check_generated_cv
-from render_profile_document import ProfessionalDocumentGenerator
+from render_document import DocumentGenerator
 from json_utils import save_json, load_json
 
 PROFILES_DIR = Path("input/profiles")
@@ -62,7 +62,7 @@ def main():
 
     extractor = ExtractResume()
     generator = ProfessionalCVGenerator()
-    renderer = ProfessionalDocumentGenerator()
+    renderer = DocumentGenerator()
 
     failures = []
     for profile_path in profile_files:

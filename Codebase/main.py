@@ -13,7 +13,7 @@ from extract_and_parse import ExtractResume, ParseJob
 from match_skills import MatchSkills
 from retrieve_evidence import RetrieveEvidence
 from generate_tailored_cv import GenerateCV
-from render_tailored_document import GenerateDocument
+from render_document import DocumentGenerator
 from json_utils import save_json
 
 INPUT_DIR = Path("input")
@@ -58,7 +58,11 @@ def main():
     save_json(OUTPUT_DIR / "stage_5_generated_cv.json", generated_cv)
 
     print("Rendering documents...")
-    paths = GenerateDocument().run(resume_data, job_data, generated_cv, str(OUTPUT_DIR))
+    heading = f"Experience - tailored for {job_data.get('title', '')} at {job_data.get('company', '')}"
+    paths = DocumentGenerator().run(
+        resume_data, generated_cv, str(OUTPUT_DIR),
+        experience_heading=heading, filename_suffix=job_data.get("company", ""),
+    )
 
     print(f"\nRequired skills matched: {match_data['required']['coverage_pct']}%  "
           f"Preferred: {match_data['preferred']['coverage_pct']}%")

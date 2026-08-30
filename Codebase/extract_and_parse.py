@@ -3,7 +3,7 @@
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
-from json_utils import extract_json
+from json_utils import invoke_json
 
 RESUME_PROMPT = PromptTemplate(
     input_variables=["resume_text"],
@@ -58,19 +58,17 @@ class ExtractResume:
     """Extract structured resume fields from free text using Gemma"""
 
     def __init__(self):
-        self.llm = OllamaLLM(model="gemma:7b", temperature=0.3)
+        self.chain = RESUME_PROMPT | OllamaLLM(model="gemma:7b", temperature=0.3)
 
     def run(self, resume_text):
-        response = (RESUME_PROMPT | self.llm).invoke({"resume_text": resume_text})
-        return extract_json(response)
+        return invoke_json(self.chain, {"resume_text": resume_text})
 
 
 class ParseJob:
     """Extract structured job fields from free text using Gemma"""
 
     def __init__(self):
-        self.llm = OllamaLLM(model="gemma:7b", temperature=0.3)
+        self.chain = JOB_PROMPT | OllamaLLM(model="gemma:7b", temperature=0.3)
 
     def run(self, job_text):
-        response = (JOB_PROMPT | self.llm).invoke({"job_text": job_text})
-        return extract_json(response)
+        return invoke_json(self.chain, {"job_text": job_text})
