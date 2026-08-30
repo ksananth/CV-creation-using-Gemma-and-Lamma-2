@@ -1,35 +1,18 @@
-"""
-================================================================================
-STAGE 3: MATCH SKILLS
-================================================================================
+"""Compare resume skills against job requirements (pure Python, no LLM).
 
-Classes:
-- MatchSkills: Compare resume skills against job requirements (pure Python)
+Set intersection is deterministic and reproducible; the only fuzzy part is
+the alias table below, which is easier to explain and audit than a model's
+opinion.
 
-No LLM is used here. Set intersection is deterministic and reproducible; the
-only fuzzy part is the alias table below, which is easier to explain and audit
-than a model's opinion.
-
-The real work is NORMALISATION, not comparison. Stage 2 returns requirement
-phrases, not atomic skills - e.g. "Android, kotlin, Python, Java, or similar"
-is four skills in one string, and "AWS knowledge" is one skill plus a filler
-word. Comparing those raw against the resume would report a 33% match for a
-candidate who actually has every required skill.
-
-Imported by main.py
-
-IMPORT:
-from step_3_match import MatchSkills
-
-================================================================================
+The real work is NORMALISATION, not comparison. A parsed job description
+returns requirement phrases, not atomic skills - e.g. "Android, kotlin,
+Python, Java, or similar" is four skills in one string, and "AWS knowledge"
+is one skill plus a filler word. Comparing those raw against the resume
+would report a 33% match for a candidate who actually has every required
+skill.
 """
 
 import re
-
-
-# ============================================================================
-# NORMALISATION TABLES
-# ============================================================================
 
 # Canonical forms for common spelling variants.
 ALIASES = {
@@ -121,34 +104,16 @@ def normalise_all(phrases):
     return seen
 
 
-# ============================================================================
-# STAGE 3: MATCH SKILLS
-# ============================================================================
-
 class MatchSkills:
     """Compare resume skills against job requirements"""
 
-    def __init__(self):
-        """Initialize"""
-        print("[*] Initializing skill matcher (no LLM)...")
-        print(f"[✓] Matcher ready ({len(ALIASES)} aliases, {len(FILLER)} filler words)")
-
     def run(self, resume_data, job_data):
-        """Match skills and return JSON"""
-        print("\n" + "="*70)
-        print("STAGE 3: MATCH SKILLS (Python)")
-        print("="*70)
-
         resume_skills = normalise_all(resume_data.get("skills", []))
         required = normalise_all(job_data.get("required_skills", []))
         preferred = normalise_all(job_data.get("preferred_skills", []))
 
-        print(f"[*] Normalised resume:    {len(resume_data.get('skills', []))} phrases -> {len(resume_skills)} skills")
-        print(f"[*] Normalised required:  {len(job_data.get('required_skills', []))} phrases -> {len(required)} skills")
-        print(f"[*] Normalised preferred: {len(job_data.get('preferred_skills', []))} phrases -> {len(preferred)} skills")
-
-        # A skill can be evidenced in the experience text without appearing in
-        # the skills list, so fall back to a scan of the resume prose.
+        # A skill can be evidenced in the experience text without appearing
+        # in the skills list, so fall back to a scan of the resume prose.
         resume_text = self._resume_text(resume_data)
         resume_set = set(resume_skills)
 
@@ -173,19 +138,16 @@ class MatchSkills:
                 "matched": matched,
                 "missing": missing,
                 "sources": sources,
+                "coverage_pct": round(100.0 * len(matched) / len(wanted), 1) if wanted else 0.0,
             }
-            pct = round(100.0 * len(matched) / len(wanted), 1) if wanted else 0.0
-            report[label]["coverage_pct"] = pct
-            print(f"[✓] {label.capitalize():9} {len(matched)}/{len(wanted)} matched ({pct}%)")
 
         # Skills the candidate has that this job never asked for - first
         # candidates to cut when the CV has to fit two pages.
         asked = set(required) | set(preferred)
         report["extra"] = [s for s in resume_skills if s not in asked]
 
-        # Exactly the skills the generator would be tempted to invent, because
-        # the job asks for them and the resume cannot back them up. Stage 5
-        # uses this as a blocklist.
+        # Exactly the skills a generator would be tempted to invent, because
+        # the job asks for them and the resume cannot back them up.
         report["fabrication_blocklist"] = (
             report["required"]["missing"] + report["preferred"]["missing"]
         )
@@ -195,11 +157,6 @@ class MatchSkills:
             "required_skills": required,
             "preferred_skills": preferred,
         }
-
-        if report["extra"]:
-            print(f"[*] Extra (not asked for): {', '.join(report['extra'])}")
-        if report["fabrication_blocklist"]:
-            print(f"[!] Do NOT invent: {', '.join(report['fabrication_blocklist'])}")
 
         return report
 

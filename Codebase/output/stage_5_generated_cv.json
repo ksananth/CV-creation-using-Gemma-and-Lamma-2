@@ -1,16 +1,11 @@
 {
-  "summary": "Seasoned Frontend Engineer with expertise in scalable system design, API development, and mentorship. Skilled in Kotlin, Android, Flutter, and various other technologies relevant to FinTech's requirements.",
+  "summary": "Seasoned Frontend Engineer with expertise in Kotlin, Android development, and various frontend frameworks. Skilled in designing scalable systems and leading architecture discussions.",
   "bullets": [
-    "Led architecture discussions and designed scalable systems for various projects.",
-    "Developed APIs utilizing Kotlin and other backend technologies.",
-    "Contributed to the mentorship of junior Frontend engineers, fostering their development and skills."
+    "Led architecture decisions for mobile applications, resulting in improved scalability and performance.",
+    "Developed APIs using Kotlin, enabling seamless integration with backend systems."
   ],
   "ordered_skills": [
     "Kotlin",
-    "Android",
-    "Flutter",
-    "AWS",
-    "Docker",
-    "Kubernetes"
+    "Android"
   ]
 }

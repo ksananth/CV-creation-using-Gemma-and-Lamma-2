@@ -18,7 +18,8 @@
   "preferred": {
     "matched": [],
     "missing": [
-      "payment systems"
+      "payment systems",
+      "leadership background"
     ],
     "sources": {},
     "coverage_pct": 0.0
@@ -32,7 +33,8 @@
     "kubernetes"
   ],
   "fabrication_blocklist": [
-    "payment systems"
+    "payment systems",
+    "leadership background"
   ],
   "normalized": {
     "resume_skills": [
@@ -54,7 +56,8 @@
       "java"
     ],
     "preferred_skills": [
-      "payment systems"
+      "payment systems",
+      "leadership background"
     ]
   }
 }

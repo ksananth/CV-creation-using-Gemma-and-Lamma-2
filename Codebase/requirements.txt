@@ -1,14 +1,7 @@
 # Python Dependencies
 
 langchain>=0.1.0
-langchain-community>=0.1.0
+langchain-ollama>=0.1.0
 ollama>=0.1.0
-requests>=2.31.0
-sentence-transformers>=2.2.2
-faiss-cpu>=1.7.3
-numpy>=1.24.0
 python-docx>=0.8.11
 reportlab>=4.0.0
-python-dotenv>=1.0.0
-tqdm>=4.66.0
-jsonschema>=4.17.0

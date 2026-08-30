@@ -26,6 +26,7 @@
     }
   },
   "fabrication_blocklist": [
-    "payment systems"
+    "payment systems",
+    "leadership background"
   ]
 }

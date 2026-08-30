@@ -1,26 +1,7 @@
+"""Rule-based quality gate for extracted profiles and generated CVs.
+
+Pure Python, no LLM - a sanity check before a CV is written to disk.
 """
-================================================================================
-CORE TASK - STEP 3: QUALITY CHECK
-================================================================================
-
-Functions:
-- check_extraction: Flag an extracted profile that is missing basics (name,
-  contact info, any work history).
-- check_generated_cv: Flag generated CV content that is empty, still has
-  placeholder text, or introduces a company/skill not present in the source
-  profile.
-
-Pure Python, no LLM - a rule-based gate before a CV is written to disk.
-
-Imported by core_main.py
-
-IMPORT:
-from core_3_quality_check import check_extraction, check_generated_cv
-
-================================================================================
-"""
-
-import re
 
 _PLACEHOLDER_MARKERS = ("todo", "n/a", "achievement 1", "achievement 2", "[", "lorem ipsum")
 
