@@ -1,0 +1,19 @@
+{
+  "summary": "Passionate and skilled Registered Nurse with 5 years of experience in critical care, specializing in patient monitoring, ventilator management, and team leadership.",
+  "experience": [
+    {
+      "position": "ICU Nurse",
+      "company": "Lakeview General Hospital",
+      "duration": "Jan 2021 - Present",
+      "bullets": [
+        "Spearheaded ventilator management for critically ill patients",
+        "Enhanced patient monitoring protocols leading to improved patient outcomes"
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "Patient monitoring",
+    "Ventilator management",
+    "Training"
+  ]
+}

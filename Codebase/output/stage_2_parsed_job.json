@@ -5,7 +5,10 @@
   "experience_level": "senior",
   "years_required": "10+",
   "required_skills": [
-    "Android, kotlin, Python, Java"
+    "Android",
+    "Kotlin",
+    "Python",
+    "Java"
   ],
   "preferred_skills": [
     "Payment systems experience"

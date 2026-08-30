@@ -38,6 +38,12 @@ try:
     print("[✓] Imported: step_1_2_extract_parse.py")
     from step_3_match import MatchSkills
     print("[✓] Imported: step_3_match.py")
+    from step_4_retrieve import RetrieveEvidence
+    print("[✓] Imported: step_4_retrieve.py")
+    from step_5_generate import GenerateCV
+    print("[✓] Imported: step_5_generate.py")
+    from step_6_docx import GenerateDocument
+    print("[✓] Imported: step_6_docx.py")
 except ImportError as e:
     print(f"[✗] ERROR: Cannot import stage_1_2_extract_parse.py")
     print(f"    Make sure stage_1_2_extract_parse.py is in same folder as main.py")
@@ -162,6 +168,73 @@ class CVOrchestrator:
             traceback.print_exc()
             return
 
+        # ====================================================================
+        # STAGE 4: Retrieve Evidence
+        # ====================================================================
+
+        print("\n[*] Running Stage 4...")
+
+        try:
+            retriever = RetrieveEvidence()
+            evidence_data = retriever.run(resume_data, match_data)
+
+            if not evidence_data:
+                print("[✗] Stage 4 failed!")
+                return
+
+            with open("output/stage_4_evidence.json", 'w', encoding='utf-8') as f:
+                json.dump(evidence_data, f, indent=2)
+            print("[✓] Saved: output/stage_4_evidence.json")
+
+        except Exception as e:
+            print(f"[✗] ERROR in Stage 4: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+
+        # ====================================================================
+        # STAGE 5: Generate Tailored CV
+        # ====================================================================
+
+        print("\n[*] Running Stage 5...")
+
+        try:
+            generator = GenerateCV()
+            generated_cv = generator.run(resume_data, job_data, match_data, evidence_data)
+
+            if not generated_cv:
+                print("[✗] Stage 5 failed!")
+                return
+
+            with open("output/stage_5_generated_cv.json", 'w', encoding='utf-8') as f:
+                json.dump(generated_cv, f, indent=2)
+            print("[✓] Saved: output/stage_5_generated_cv.json")
+
+        except Exception as e:
+            print(f"[✗] ERROR in Stage 5: {e}")
+            import traceback
+            traceback.print_exc()
+            return
+
+        # ====================================================================
+        # STAGE 6: Generate DOCX + PDF
+        # ====================================================================
+
+        print("\n[*] Running Stage 6...")
+
+        try:
+            doc_generator = GenerateDocument()
+            doc_paths = doc_generator.run(resume_data, job_data, generated_cv)
+
+            if not doc_paths:
+                print("[✗] Stage 6 failed!")
+                return
+
+        except Exception as e:
+            print(f"[✗] ERROR in Stage 6: {e}")
+            import traceback
+            traceback.print_exc()
+            return
 
         print("\n" + "="*70)
         print("SUMMARY")
@@ -191,11 +264,13 @@ class CVOrchestrator:
         print(f"  ✓ output/stage_1_extracted_resume.json")
         print(f"  ✓ output/stage_2_parsed_job.json")
         print(f"  ✓ output/stage_3_match.json")
+        print(f"  ✓ output/stage_4_evidence.json")
+        print(f"  ✓ output/stage_5_generated_cv.json")
+        print(f"  ✓ {doc_paths['docx_path']}")
+        print(f"  ✓ {doc_paths['pdf_path']}")
 
         print("\n" + "="*70)
-        print("✅ STAGE 1-3 COMPLETE!")
-        print("="*70)
-        print("\nNext: build step_4_retrieve.py (RAG evidence retrieval)")
+        print("✅ PIPELINE COMPLETE!")
         print("="*70 + "\n")
 
 

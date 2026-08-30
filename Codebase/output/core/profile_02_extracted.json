@@ -1,0 +1,41 @@
+{
+  "name": "Rahul Verma",
+  "email": "rahul.verma.test@email.com",
+  "phone": "+91 90000 11223",
+  "location": "Pune",
+  "years_experience": "9",
+  "summary": "Leading a team of 4 designing gearbox components using SolidWorks and running FEA simulations in Ansys, cut prototype iteration time by about 30%.",
+  "experience": [
+    {
+      "company": "Torque Auto Systems",
+      "position": "Design Lead",
+      "duration": "2019-present",
+      "location": "Pune",
+      "description": "Led a team of 4 designing gearbox components using SolidWorks and running FEA simulations in Ansys, cut prototype iteration time by about 30%."
+    },
+    {
+      "company": "Precision Forge Ltd",
+      "position": "Design Engineer",
+      "duration": "2014-2019",
+      "location": "N/A",
+      "description": "Worked on CAD modeling and GD&T documentation."
+    }
+  ],
+  "skills": [
+    "SolidWorks",
+    "AutoCAD",
+    "Ansys",
+    "GD&T",
+    "Six Sigma (Green Belt)"
+  ],
+  "education": [
+    {
+      "degree": "B.Tech Mechanical Engineering",
+      "field": "Mechanical Engineering",
+      "school": "VIT Vellore",
+      "graduation_year": "2014"
+    }
+  ],
+  "certifications": [],
+  "languages": []
+}

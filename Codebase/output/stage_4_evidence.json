@@ -1,0 +1,31 @@
+{
+  "evidence": {
+    "android": {
+      "snippets": [
+        "Listed in skills: Kotlin, Android, PHP, Angular, Flutter, Python, Java, AWS, Docker, Kubernetes"
+      ],
+      "source": "skills_list"
+    },
+    "kotlin": {
+      "snippets": [
+        "Listed in skills: Kotlin, Android, PHP, Angular, Flutter, Python, Java, AWS, Docker, Kubernetes"
+      ],
+      "source": "skills_list"
+    },
+    "python": {
+      "snippets": [
+        "Listed in skills: Kotlin, Android, PHP, Angular, Flutter, Python, Java, AWS, Docker, Kubernetes"
+      ],
+      "source": "skills_list"
+    },
+    "java": {
+      "snippets": [
+        "Listed in skills: Kotlin, Android, PHP, Angular, Flutter, Python, Java, AWS, Docker, Kubernetes"
+      ],
+      "source": "skills_list"
+    }
+  },
+  "fabrication_blocklist": [
+    "payment systems"
+  ]
+}

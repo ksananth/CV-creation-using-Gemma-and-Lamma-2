@@ -1,0 +1,41 @@
+{
+  "name": "Grace Mwangi",
+  "email": "grace.mwangi.test@email.com",
+  "phone": "+254 712 345 678",
+  "location": "Nairobi",
+  "years_experience": "5",
+  "summary": "Sales professional with 5 years of experience in B2B SaaS sales.",
+  "experience": [
+    {
+      "company": "CloudPeak Solutions",
+      "position": "Senior Account Executive",
+      "duration": "2021-present",
+      "location": "Nairobi",
+      "description": "Closed $1.2M in new business last year and consistently hit 110%+ of quota."
+    },
+    {
+      "company": "LinkWorks Africa",
+      "position": "Account Executive",
+      "duration": "2019-2021",
+      "location": "Nairobi",
+      "description": ""
+    }
+  ],
+  "skills": [
+    "Solution selling",
+    "Salesforce CRM",
+    "Negotiation",
+    "Pipeline management",
+    "Presentations"
+  ],
+  "education": [
+    {
+      "degree": "BBA",
+      "field": "",
+      "school": "University of Nairobi",
+      "graduation_year": "2018"
+    }
+  ],
+  "certifications": [],
+  "languages": []
+}

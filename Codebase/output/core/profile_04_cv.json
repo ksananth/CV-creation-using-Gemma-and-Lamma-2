@@ -1,0 +1,33 @@
+{
+  "summary": "Seasoned full-stack developer with 4 years of experience building scalable web applications and optimizing user experience.",
+  "experience": [
+    {
+      "position": "Software Developer",
+      "company": "ByteForge Technologies",
+      "duration": "June 2021 - Present",
+      "bullets": [
+        "Developed responsive React/Node.js web apps.",
+        "Redesigned checkout flow, leading to a 15% reduction in cart abandonment.",
+        "Menttored and guided two interns."
+      ]
+    },
+    {
+      "position": "Junior Developer",
+      "company": "CodeNest Studio",
+      "duration": "2019 - 2021",
+      "bullets": [
+        "Contributed to WordPress sites and small Django projects."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "JavaScript",
+    "React",
+    "Node.js",
+    "Python",
+    "Django",
+    "PostgreSQL",
+    "Docker",
+    "AWS"
+  ]
+}

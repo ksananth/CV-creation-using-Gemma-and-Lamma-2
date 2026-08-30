@@ -1,0 +1,43 @@
+{
+  "name": "James O'Brien",
+  "email": "james.obrien.test@email.com",
+  "phone": "+1 415 555 0192",
+  "location": "San Francisco, CA",
+  "years_experience": "12",
+  "summary": "Accountant with 12 years experience, CPA licensed.",
+  "experience": [
+    {
+      "company": "Harborview Financial Group",
+      "position": "Senior Accountant",
+      "duration": "2017-Present",
+      "location": "San Francisco, CA",
+      "description": "Closed monthly books for 3 subsidiaries, led transition to NetSuite which cut month-end close time from 10 days to 5."
+    },
+    {
+      "company": "Coastal Retail Group",
+      "position": "Staff Accountant",
+      "duration": "2012-2017",
+      "location": "N/A",
+      "description": "N/A"
+    }
+  ],
+  "skills": [
+    "NetSuite",
+    "QuickBooks",
+    "Excel (advanced)",
+    "GAAP reporting",
+    "Tax filing"
+  ],
+  "education": [
+    {
+      "degree": "B.Com Accounting",
+      "field": "Accounting",
+      "school": "San Francisco State University",
+      "graduation_year": "2011"
+    }
+  ],
+  "certifications": [
+    "CPA"
+  ],
+  "languages": []
+}

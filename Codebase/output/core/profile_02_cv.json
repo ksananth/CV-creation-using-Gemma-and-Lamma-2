@@ -1,0 +1,29 @@
+{
+  "summary": "Gearbox design expert with 7+ years of experience leading teams and implementing innovative methodologies to optimize prototype development cycles.",
+  "experience": [
+    {
+      "position": "Design Lead",
+      "company": "Torque Auto Systems",
+      "duration": "2019-Present",
+      "bullets": [
+        "Led a team of 4 in designing gearbox components using SolidWorks.",
+        "Implemented FEA simulations in Ansys to reduce prototype iteration time by 30%."
+      ]
+    },
+    {
+      "position": "Design Engineer",
+      "company": "Precision Forge Ltd",
+      "duration": "2014-2019",
+      "bullets": [
+        "Contributed to CAD modeling and GD&T documentation."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "SolidWorks",
+    "AutoCAD",
+    "Ansys",
+    "GD&T",
+    "Six Sigma (Green Belt)"
+  ]
+}

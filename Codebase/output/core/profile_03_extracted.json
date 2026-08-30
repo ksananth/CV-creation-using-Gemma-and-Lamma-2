@@ -1,0 +1,42 @@
+{
+  "name": "Sara Khan",
+  "email": "sara.khan.test@email.com",
+  "phone": "99887 76655",
+  "location": "Mumbai",
+  "years_experience": "5",
+  "summary": "Registered Nurse with 5 years in critical care.",
+  "experience": [
+    {
+      "company": "Lakeview General Hospital",
+      "position": "ICU Nurse",
+      "duration": "Jan 2021 - present",
+      "location": "Mumbai",
+      "description": "Handling ventilator management, patient monitoring, and training junior nurses."
+    },
+    {
+      "company": "St. Anne's Hospital",
+      "position": "Staff Nurse",
+      "duration": "2018-2021",
+      "location": "N/A",
+      "description": "N/A"
+    }
+  ],
+  "skills": [
+    "Patient monitoring",
+    "Ventilator management",
+    "Training"
+  ],
+  "education": [
+    {
+      "degree": "GNM Nursing diploma",
+      "field": "Nursing",
+      "school": "Mumbai School of Nursing",
+      "graduation_year": "2017"
+    }
+  ],
+  "certifications": [
+    "BLS",
+    "ACLS"
+  ],
+  "languages": []
+}

@@ -1,0 +1,29 @@
+{
+  "summary": "Seasoned HR professional with expertise in recruitment, employee relations, and onboarding program design. Focused on optimizing HR processes and fostering positive employee experiences.",
+  "experience": [
+    {
+      "position": "HR Business Partner",
+      "company": "Vertex Manufacturing",
+      "duration": "2020-Present",
+      "bullets": [
+        "Reduced average time-to-hire by 17 days through process improvements.",
+        "Developed and implemented a new onboarding program for 200+ employees."
+      ]
+    },
+    {
+      "position": "HR Generalist",
+      "company": "Meridian Logistics",
+      "duration": "2017-2020",
+      "bullets": [
+        "Managed payroll coordination and resolution of employee grievances."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "Recruitment",
+    "HRIS (Workday)",
+    "Employee Relations",
+    "Onboarding Design",
+    "Labor Law Compliance"
+  ]
+}
