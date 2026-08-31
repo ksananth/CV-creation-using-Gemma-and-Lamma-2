@@ -1,4 +1,4 @@
-"""Rewrite a candidate's experience into job-tailored CV content using Gemma.
+"""Rewrite a candidate's experience into job-tailored CV content using Gemma 3.
 
 The model only ever sees the job details, the evidence retrieved for skills
 the candidate can prove, and the fabrication blocklist - never the raw
@@ -47,10 +47,10 @@ Return ONLY valid JSON (no markdown, no explanations):
 
 
 class GenerateCV:
-    """Generate job-tailored CV content using Gemma"""
+    """Generate job-tailored CV content using Gemma 3"""
 
     def __init__(self):
-        self.chain = PROMPT | OllamaLLM(model="gemma:7b", temperature=0.4)
+        self.chain = PROMPT | OllamaLLM(model="gemma3:1b", temperature=0.4)
 
     def run(self, resume_data, job_data, match_data, evidence_data):
         evidence = evidence_data["evidence"]

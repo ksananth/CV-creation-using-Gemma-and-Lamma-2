@@ -1,4 +1,4 @@
-"""Extract structured fields from a resume or job description using Gemma."""
+"""Extract structured fields from a resume or job description using Llama 2."""
 
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
@@ -55,20 +55,20 @@ Return JSON (no markdown, no explanations):
 
 
 class ExtractResume:
-    """Extract structured resume fields from free text using Gemma"""
+    """Extract structured resume fields from free text using Llama 2"""
 
     def __init__(self):
-        self.chain = RESUME_PROMPT | OllamaLLM(model="gemma:7b", temperature=0.3)
+        self.chain = RESUME_PROMPT | OllamaLLM(model="llama2:7b", temperature=0.3)
 
     def run(self, resume_text):
         return invoke_json(self.chain, {"resume_text": resume_text})
 
 
 class ParseJob:
-    """Extract structured job fields from free text using Gemma"""
+    """Extract structured job fields from free text using Llama 2"""
 
     def __init__(self):
-        self.chain = JOB_PROMPT | OllamaLLM(model="gemma:7b", temperature=0.3)
+        self.chain = JOB_PROMPT | OllamaLLM(model="llama2:7b", temperature=0.3)
 
     def run(self, job_text):
         return invoke_json(self.chain, {"job_text": job_text})

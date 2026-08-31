@@ -1,1 +1,5 @@
+Pull the two required models once (extraction uses Llama 2, generation uses Gemma 3 1B):
+ollama pull llama2:7b
+ollama pull gemma3:1b
+
 python main.py -input input/profiles -output output/profiles -jd input/job_description.txt

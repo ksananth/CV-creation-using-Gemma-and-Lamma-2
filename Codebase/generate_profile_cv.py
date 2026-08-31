@@ -1,5 +1,5 @@
 """Rewrite one extracted profile into a polished, professional CV using
-Gemma. There is no target job here (unlike generate_tailored_cv.py) - the
+Gemma 3. There is no target job here (unlike generate_tailored_cv.py) - the
 goal is only to professionalise the candidate's own facts (clear summary,
 strong action-verb bullets, consistent formatting), not to match a posting.
 """
@@ -35,10 +35,10 @@ Return ONLY valid JSON (no markdown, no explanations):
 
 
 class ProfessionalCVGenerator:
-    """Rewrite an extracted profile into a professional CV using Gemma"""
+    """Rewrite an extracted profile into a professional CV using Gemma 3"""
 
     def __init__(self):
-        self.chain = PROMPT | OllamaLLM(model="gemma:7b", temperature=0.4)
+        self.chain = PROMPT | OllamaLLM(model="gemma3:1b", temperature=0.4)
 
     def run(self, profile_data):
         experience = profile_data.get("experience", []) or []

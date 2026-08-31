@@ -14,10 +14,10 @@ Run:
 
 Steps:
 1. Parse args (-input, -output, -jd); load every resume .txt in the input folder.
-2. Extract job description  -> extract_and_parse.py : ParseJob (Gemma via Ollama + LangChain)
+2. Extract job description  -> extract_and_parse.py : ParseJob (Llama 2 via Ollama + LangChain)
    - job description text -> {title, company, required_skills, preferred_skills, responsibilities, ...}
    For each resume:
-3. Extract resume            -> extract_and_parse.py : ExtractResume (Gemma)
+3. Extract resume            -> extract_and_parse.py : ExtractResume (Llama 2)
    - resume text -> {name, email, phone, experience, skills, education, ...}
 4. Match skills               -> match_skills.py : MatchSkills (pure Python, no LLM)
    - normalises skill phrases (aliases, filler words, protected multi-word terms)
@@ -27,7 +27,7 @@ Steps:
    - splits resume prose into sentences
    - finds the supporting sentence(s) for each matched skill
    - falls back to "Listed in skills" when no sentence backs it up
-6. Generate tailored CV        -> generate_tailored_cv.py : GenerateCV (Gemma)
+6. Generate tailored CV        -> generate_tailored_cv.py : GenerateCV (Gemma 3 1B)
    - model sees ONLY job details + evidence + blocklist, never the raw resume
    - output: {summary, experience[].bullets, ordered_skills}
    - hard post-generation filter strips any blocklisted skill that slips through anyway
@@ -47,8 +47,8 @@ Run:
 
 Steps:
 1. Read every input/profiles/*.txt profile.
-2. Extract profile   -> extract_and_parse.py : ExtractResume (Gemma)
-3. Generate CV        -> generate_profile_cv.py : ProfessionalCVGenerator (Gemma)
+2. Extract profile   -> extract_and_parse.py : ExtractResume (Llama 2)
+3. Generate CV        -> generate_profile_cv.py : ProfessionalCVGenerator (Gemma 3 1B)
    - no target job; only polishes the candidate's own stated facts
      (clearer summary, stronger action-verb bullets) - never invents employers,
      numbers, titles, or tools not already present
@@ -65,47 +65,64 @@ Steps:
 Shared building blocks
 ------------------------------------------------------------
 - json_utils.py    : extract_json/invoke_json - pulls a JSON object out of an LLM
-                      response, repairing common Gemma mistakes (trailing commas,
+                      response, repairing common local-LLM mistakes (trailing commas,
                       dropped closing quotes), retries on failure; save_json/load_json.
 - document_style.py: shared ATS-safe styling constants/helpers used by both .docx
                       and .pdf renderers.
-- LLM backend      : Gemma via Ollama (langchain_ollama.OllamaLLM), orchestrated
-                      with LangChain PromptTemplate + chain.invoke() in every
-                      LLM-calling module.
+- LLM backend      : two local models via Ollama (langchain_ollama.OllamaLLM),
+                      orchestrated with LangChain PromptTemplate + chain.invoke()
+                      in every LLM-calling module - see "LLM used and purpose".
 
 ------------------------------------------------------------
 LLM used and purpose
 ------------------------------------------------------------
-Model : Gemma (gemma:7b), served locally through Ollama. No cloud API calls -
-        inference runs entirely on-device, so no resume/job data leaves the
-        machine. Orchestrated with LangChain (PromptTemplate | OllamaLLM chain).
+Two different local models are used for two different jobs, both served
+through Ollama with no cloud API calls - inference runs entirely on-device,
+so no resume/job data ever leaves the machine.
+
+  Llama 2 (llama2:7b)  - EXTRACTION only: turning messy free text into
+                          structured JSON. Chosen for extraction because it
+                          is the larger, more general-purpose model, better
+                          suited to reliably parsing varied resume/job
+                          formats into exact fields.
+
+  Gemma 3 1B (gemma3:1b) - GENERATION only: rewriting already-structured,
+                          evidence-backed facts into polished CV prose.
+                          Chosen for generation because it is lightweight
+                          and fast for the tailoring/rewriting workload,
+                          where the facts are already pinned down and the
+                          model's job is phrasing, not extraction accuracy.
 
 Call sites:
-  1. ExtractResume            extract_and_parse.py        temp=0.3
+  1. ExtractResume            extract_and_parse.py        Llama 2   temp=0.3
      Purpose: extract structured fields from a raw resume - name, contact,
      years of experience, summary, work history, skills, education,
      certifications, languages.
 
-  2. ParseJob                 extract_and_parse.py        temp=0.3
+  2. ParseJob                 extract_and_parse.py        Llama 2   temp=0.3
      Purpose: extract structured fields from a raw job description - title,
      company, experience level, required/preferred skills, responsibilities,
      team size.
 
-  3. ProfessionalCVGenerator  generate_profile_cv.py      temp=0.4
+  3. ProfessionalCVGenerator  generate_profile_cv.py      Gemma 3 1B  temp=0.4
      Purpose: rewrite a candidate's own stated facts into a polished,
      professional summary and achievement-style bullets - no target job,
      so this only improves wording, never adds a skill or claim.
 
-  4. GenerateCV                generate_tailored_cv.py     temp=0.4
+  4. GenerateCV                generate_tailored_cv.py    Gemma 3 1B  temp=0.4
      Purpose: rewrite the candidate's evidence-backed experience into a CV
      tailored to one target job's language and responsibilities, using only
      evidence the resume can prove and excluding blocklisted skills.
 
-Why two temperatures: extraction (0.3) needs faithful, literal parsing of
-what is already on the page, not creative rewriting. Generation (0.4) allows
-some latitude in phrasing/wording while the facts themselves stay pinned to
-whatever evidence or blocklist the prompt supplies - the model is never the
-source of truth for what the candidate did, only for how it is phrased.
+Why the temperatures differ: extraction (0.3) needs faithful, literal parsing
+of what is already on the page, not creative rewriting. Generation (0.4)
+allows some latitude in phrasing/wording while the facts themselves stay
+pinned to whatever evidence or blocklist the prompt supplies - neither model
+is ever the source of truth for what the candidate did, only for how it is
+phrased.
+
+Note: json_utils.py's JSON-repair/retry logic (extract_json/invoke_json) is
+shared by both models since both occasionally return malformed JSON.
 
 ------------------------------------------------------------
 Design principle: no fabrication

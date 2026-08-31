@@ -1,4 +1,4 @@
-"""Pull a JSON object out of an LLM response, repairing common Gemma mistakes."""
+"""Pull a JSON object out of an LLM response, repairing common local-LLM mistakes."""
 
 import json
 import re
@@ -25,7 +25,7 @@ def _drop_trailing_commas(text):
 
 
 def _quote_before_bracket(text):
-    """Gemma sometimes drops the closing quote on the last string before ']'
+    """Local LLMs sometimes drop the closing quote on the last string before ']'
     (e.g. '...days.]}' instead of '...days."]}'). Insert it back."""
     out = []
     for c in text:
@@ -41,7 +41,7 @@ def _quote_before_bracket(text):
 
 def invoke_json(chain, inputs, attempts=3):
     """Invoke an LLM chain and parse its JSON output, retrying on failure -
-    Gemma occasionally returns malformed JSON, and a retry usually fixes it."""
+    local LLMs occasionally return malformed JSON, and a retry usually fixes it."""
     for _ in range(attempts):
         data = extract_json(chain.invoke(inputs))
         if data is not None:

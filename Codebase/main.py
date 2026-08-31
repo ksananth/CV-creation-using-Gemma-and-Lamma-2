@@ -36,7 +36,7 @@ def process_resume(resume_path, job_data, output_dir, extractor, matcher, retrie
 
     resume_data = extractor.run(resume_text)
     if not resume_data:
-        return "extraction failed: Gemma did not return valid JSON"
+        return "extraction failed: Llama 2 did not return valid JSON"
     save_json(output_dir / f"{stem}_extracted_resume.json", resume_data)
 
     match_data = matcher.run(resume_data, job_data)
@@ -47,7 +47,7 @@ def process_resume(resume_path, job_data, output_dir, extractor, matcher, retrie
 
     generated_cv = generator.run(resume_data, job_data, match_data, evidence_data)
     if not generated_cv:
-        return "generation failed: Gemma did not return valid JSON"
+        return "generation failed: Gemma 3 did not return valid JSON"
     save_json(output_dir / f"{stem}_generated_cv.json", generated_cv)
 
     heading = f"Experience - tailored for {job_data.get('title', '')} at {job_data.get('company', '')}"
@@ -89,7 +89,7 @@ def main():
     job_text = jd_path.read_text(encoding="utf-8")
     job_data = ParseJob().run(job_text)
     if not job_data:
-        print("JD parsing failed: Gemma did not return valid JSON")
+        print("JD parsing failed: Llama 2 did not return valid JSON")
         return
     save_json(output_dir / "parsed_job_description.json", job_data)
 
