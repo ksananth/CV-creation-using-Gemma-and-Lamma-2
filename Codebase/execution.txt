@@ -2,4 +2,8 @@ Pull the two required models once (extraction uses Llama 2, generation uses Gemm
 ollama pull llama2:7b
 ollama pull gemma3:1b
 
+Tailored to one job (matched + evidence-backed rewrite):
 python main.py -input input/profiles -output output/profiles -jd input/job_description.txt
+
+Mandatory core task - no target job, just polish each candidate's own facts (omit -jd):
+python main.py -input input/profiles -output output/core
