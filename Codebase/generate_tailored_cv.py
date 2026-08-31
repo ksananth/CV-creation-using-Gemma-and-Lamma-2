@@ -9,10 +9,39 @@ Output shares generate_profile_cv.py's schema (summary/experience/
 ordered_skills) so both feed the same document renderer.
 """
 
+import json
+
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
 from json_utils import invoke_json
+
+REFINE_PROMPT = PromptTemplate(
+    input_variables=["current_cv", "evidence_lines", "blocklist", "feedback"],
+    template="""You are revising a CV based on user feedback.
+
+CURRENT CV:
+{current_cv}
+
+EVIDENCE FROM THE CANDIDATE'S ACTUAL RESUME (the only facts you may use):
+{evidence_lines}
+
+STRICT RULES:
+- Use ONLY the evidence above. Do not invent achievements, numbers, or tools.
+- NEVER mention or imply these skills, the candidate cannot prove them: {blocklist}
+- Apply the user's feedback below; leave anything the feedback doesn't mention unchanged.
+
+USER FEEDBACK: {feedback}
+
+Return ONLY valid JSON in the same shape as CURRENT CV (no markdown, no explanations):
+{{
+    "summary": "...",
+    "experience": [
+        {{"position": "...", "company": "...", "duration": "...", "bullets": ["...", "..."]}}
+    ],
+    "ordered_skills": ["skill1", "skill2"]
+}}""",
+)
 
 PROMPT = PromptTemplate(
     input_variables=[
@@ -46,11 +75,22 @@ Return ONLY valid JSON (no markdown, no explanations):
 )
 
 
+def _strip_blocklisted(data, blocklist):
+    """Hard safety net: strip any blocklisted skill the model slipped in
+    anyway, rather than trusting it to have followed the prompt."""
+    blocked = {b.lower() for b in blocklist}
+    for job in data.get("experience", []):
+        job["bullets"] = [b for b in job.get("bullets", []) if not any(bl in b.lower() for bl in blocked)]
+    data["ordered_skills"] = [s for s in data.get("ordered_skills", []) if s.lower() not in blocked]
+    return data
+
+
 class GenerateCV:
     """Generate job-tailored CV content using Gemma 3"""
 
     def __init__(self):
         self.chain = PROMPT | OllamaLLM(model="gemma3:1b", temperature=0.4)
+        self.refine_chain = REFINE_PROMPT | OllamaLLM(model="gemma3:1b", temperature=0.4)
 
     def run(self, resume_data, job_data, match_data, evidence_data):
         evidence = evidence_data["evidence"]
@@ -79,10 +119,25 @@ class GenerateCV:
         for job in data.get("experience", []):
             job["company"] = current_job.get("company", "")
 
-        # Hard safety net: strip any blocklisted skill the model slipped in
-        # anyway, rather than trusting it to have followed the prompt.
-        blocked = {b.lower() for b in blocklist}
-        for job in data.get("experience", []):
-            job["bullets"] = [b for b in job.get("bullets", []) if not any(bl in b.lower() for bl in blocked)]
-        data["ordered_skills"] = [s for s in data.get("ordered_skills", []) if s.lower() not in blocked]
-        return data
+        return _strip_blocklisted(data, blocklist)
+
+    def refine(self, current_cv, feedback, evidence_data):
+        """Revise an already-generated CV per free-text user feedback,
+        constrained to the same evidence/blocklist as the original generation."""
+        evidence = evidence_data["evidence"]
+        blocklist = evidence_data["fabrication_blocklist"]
+
+        inputs = {
+            "current_cv": json.dumps(current_cv, indent=2),
+            "evidence_lines": "\n".join(
+                f"- {skill}: {'; '.join(info['snippets'])}"
+                for skill, info in evidence.items()
+            ) or "(none)",
+            "blocklist": ", ".join(blocklist) or "(none)",
+            "feedback": feedback,
+        }
+
+        data = invoke_json(self.refine_chain, inputs)
+        if data is None:
+            return None
+        return _strip_blocklisted(data, blocklist)

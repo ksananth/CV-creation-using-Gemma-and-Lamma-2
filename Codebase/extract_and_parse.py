@@ -7,7 +7,9 @@ from json_utils import invoke_json
 
 RESUME_PROMPT = PromptTemplate(
     input_variables=["resume_text"],
-    template="""Extract resume data and return ONLY valid JSON:
+    template="""Extract resume data and return ONLY valid JSON. If a field is
+not mentioned in the resume, use an empty string "" (or an empty list [] for
+list fields) - never write placeholder or filler text into a field.
 
 RESUME:
 {resume_text}
@@ -16,10 +18,10 @@ Return JSON (no markdown, no explanations):
 {{
     "name": "Full Name",
     "email": "email@domain.com",
-    "phone": "+1-xxx-xxx-xxxx or empty",
-    "location": "City, State or empty",
-    "years_experience": "7+ or empty",
-    "summary": "Summary or empty",
+    "phone": "+1-xxx-xxx-xxxx",
+    "location": "City, State",
+    "years_experience": "7+",
+    "summary": "Professional summary",
     "experience": [
         {{"company": "Name", "position": "Title", "duration": "Start-End", "location": "City", "description": "Achievements"}}
     ],
@@ -34,7 +36,9 @@ Return JSON (no markdown, no explanations):
 
 JOB_PROMPT = PromptTemplate(
     input_variables=["job_text"],
-    template="""Parse job and return ONLY valid JSON:
+    template="""Parse job and return ONLY valid JSON. If a field is not
+mentioned in the job description, use an empty string "" (or an empty list
+[] for list fields) - never write placeholder or filler text into a field.
 
 JOB:
 {job_text}
@@ -42,16 +46,30 @@ JOB:
 Return JSON (no markdown, no explanations):
 {{
     "title": "Job Title",
-    "company": "Company or empty",
-    "location": "Location or empty",
-    "experience_level": "junior/mid/senior or empty",
-    "years_required": "5+ or empty",
+    "company": "",
+    "location": "",
+    "experience_level": "junior/mid/senior",
+    "years_required": "5+",
     "required_skills": ["Skill1", "Skill2"],
     "preferred_skills": ["Skill3"],
     "responsibilities": ["Responsibility1"],
-    "team_size": "number or empty"
+    "team_size": ""
 }}""",
 )
+
+
+_PLACEHOLDER_SUFFIX = "or empty"
+
+
+def _clean_placeholders(data):
+    """Hard safety net: some local models echo the prompt's own field-hint
+    text (e.g. 'Company or empty') into a field instead of leaving it blank
+    when the source text doesn't mention it. Blank those out rather than
+    trust every model to have followed the "" instruction."""
+    for key, value in data.items():
+        if isinstance(value, str) and value.strip().lower().endswith(_PLACEHOLDER_SUFFIX):
+            data[key] = ""
+    return data
 
 
 class ExtractResume:
@@ -61,7 +79,8 @@ class ExtractResume:
         self.chain = RESUME_PROMPT | OllamaLLM(model="llama2:7b", temperature=0.3)
 
     def run(self, resume_text):
-        return invoke_json(self.chain, {"resume_text": resume_text})
+        data = invoke_json(self.chain, {"resume_text": resume_text})
+        return _clean_placeholders(data) if data else data
 
 
 class ParseJob:
@@ -71,4 +90,5 @@ class ParseJob:
         self.chain = JOB_PROMPT | OllamaLLM(model="llama2:7b", temperature=0.3)
 
     def run(self, job_text):
-        return invoke_json(self.chain, {"job_text": job_text})
+        data = invoke_json(self.chain, {"job_text": job_text})
+        return _clean_placeholders(data) if data else data

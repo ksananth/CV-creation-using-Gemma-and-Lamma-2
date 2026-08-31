@@ -14,6 +14,13 @@ CV (.docx/.pdf) plus stage JSON for each resume into the output folder.
 Resumable: a resume whose extracted/generated JSON already exists in the
 output folder is loaded instead of re-run, so an interrupted batch can
 continue without redoing work.
+
+Pass -review to inspect each generated CV interactively before it's
+finalised: it prints ATS coverage (tailored mode), which matched skills
+don't actually appear in the rendered Skills line, and quality_check
+warnings, then lets you type free-text feedback to have the LLM revise the
+CV (still constrained to the same evidence/blocklist), looping until you
+accept it by pressing Enter.
 """
 
 import argparse
@@ -39,13 +46,68 @@ def parse_args():
     parser.add_argument("-jd", dest="jd_path", default=None,
                          help="Path to a job description .txt file (optional - omit to polish each "
                               "resume on its own, with no target job)")
+    parser.add_argument("-review", dest="review", action="store_true",
+                         help="Interactively review/refine each generated CV before finalising it")
     return parser.parse_args()
 
 
-def process_resume(resume_path, job_data, output_dir, extractor, matcher, retriever, generator, renderer):
+def unrendered_matched_skills(generated_cv, match_data):
+    """Required skills match_skills.py confirmed the resume can prove, that
+    don't actually appear in this CV's rendered Skills line - the gap between
+    what was matched and what an ATS keyword-scan of the document would see."""
+    if not match_data:
+        return []
+    rendered = {s.lower() for s in generated_cv.get("ordered_skills", [])}
+    return [s for s in match_data["required"]["matched"] if s.lower() not in rendered]
+
+
+def print_review_report(generated_cv, resume_data, job_data, match_data, issues):
+    print("\n--- Current CV ---")
+    print(f"Summary: {generated_cv.get('summary', '')}")
+    for job in generated_cv.get("experience", []):
+        print(f"{job.get('position', '')} - {job.get('company', '')} ({job.get('duration', '')})")
+        for bullet in job.get("bullets", []):
+            print(f"  - {bullet}")
+    print(f"Skills: {', '.join(generated_cv.get('ordered_skills', []))}")
+
+    if job_data and match_data:
+        print(f"ATS coverage: required {match_data['required']['coverage_pct']}%, "
+              f"preferred {match_data['preferred']['coverage_pct']}%")
+        gap = unrendered_matched_skills(generated_cv, match_data)
+        if gap:
+            print(f"Matched skills missing from this CV's Skills line: {', '.join(gap)}")
+        if match_data["fabrication_blocklist"]:
+            print(f"Cannot prove (excluded): {', '.join(match_data['fabrication_blocklist'])}")
+    if issues:
+        print(f"Quality warnings: {', '.join(issues)}")
+
+
+def review_loop(generated_cv, resume_data, job_data, match_data, evidence_data, generator):
+    while True:
+        issues = check_generated_cv(generated_cv, resume_data)
+        print_review_report(generated_cv, resume_data, job_data, match_data, issues)
+
+        feedback = input("\nFeedback to refine this CV, or Enter to accept: ").strip()
+        if not feedback:
+            return generated_cv
+
+        if job_data:
+            revised = generator.refine(generated_cv, feedback, evidence_data)
+        else:
+            revised = generator.refine(generated_cv, feedback, resume_data)
+
+        if revised is None:
+            print("Refinement failed: model did not return valid JSON. Try rephrasing the feedback.")
+            continue
+        generated_cv = revised
+
+
+def process_resume(resume_path, job_data, output_dir, extractor, matcher, retriever, generator, renderer, review=False):
     stem = resume_path.stem
     extracted_path = output_dir / f"{stem}_extracted_resume.json"
     generated_path = output_dir / f"{stem}_generated_cv.json"
+    match_path = output_dir / f"{stem}_match.json"
+    evidence_path = output_dir / f"{stem}_evidence.json"
 
     if extracted_path.exists():
         resume_data = load_json(extracted_path)
@@ -56,15 +118,20 @@ def process_resume(resume_path, job_data, output_dir, extractor, matcher, retrie
         save_json(extracted_path, resume_data)
 
     issues = check_extraction(resume_data)
+    match_data, evidence_data = None, None
 
     if generated_path.exists():
         generated_cv = load_json(generated_path)
+        if job_data and match_path.exists():
+            match_data = load_json(match_path)
+        if job_data and evidence_path.exists():
+            evidence_data = load_json(evidence_path)
     elif job_data:
         match_data = matcher.run(resume_data, job_data)
-        save_json(output_dir / f"{stem}_match.json", match_data)
+        save_json(match_path, match_data)
 
         evidence_data = retriever.run(resume_data, match_data)
-        save_json(output_dir / f"{stem}_evidence.json", evidence_data)
+        save_json(evidence_path, evidence_data)
 
         generated_cv = generator.run(resume_data, job_data, match_data, evidence_data)
         if not generated_cv:
@@ -77,6 +144,10 @@ def process_resume(resume_path, job_data, output_dir, extractor, matcher, retrie
         generated_cv = generator.run(resume_data)
         if not generated_cv:
             return "generation failed: Gemma 3 did not return valid JSON"
+        save_json(generated_path, generated_cv)
+
+    if review:
+        generated_cv = review_loop(generated_cv, resume_data, job_data, match_data, evidence_data, generator)
         save_json(generated_path, generated_cv)
 
     issues += check_generated_cv(generated_cv, resume_data)
@@ -137,7 +208,7 @@ def main():
     failures = []
     for resume_path in resume_files:
         try:
-            error = process_resume(resume_path, job_data, output_dir, extractor, matcher, retriever, generator, renderer)
+            error = process_resume(resume_path, job_data, output_dir, extractor, matcher, retriever, generator, renderer, review=args.review)
         except Exception as e:
             error = f"crashed: {e}"
         if error:

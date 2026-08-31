@@ -50,6 +50,14 @@ Steps:
 6. Quality check (generated CV) -> quality_check.py : check_generated_cv
    (rule-based, no LLM) - flags empty summary, placeholder text, missing
    bullets, or an unrecognised company introduced into the generated CV.
+6a. User review and iterative revision (-review flag, optional): prints the
+    current CV, ATS coverage % (tailored mode), any matched-but-unrendered
+    skills (skills match_skills.py confirmed but that didn't make it into
+    this CV's Skills line), the fabrication blocklist, and quality_check
+    warnings. Prompts for free-text feedback; if given, calls
+    GenerateCV.refine / ProfessionalCVGenerator.refine to revise the CV
+    under the same evidence/blocklist or candidate-facts constraint as the
+    original generation, then repeats until the user accepts (Enter).
 7. Render documents -> render_document.py + document_style.py
    - shared ATS-friendly styling: single column, standard font, plain black
      text, plain-text section headings, real bullet lists.
@@ -115,6 +123,13 @@ Call sites:
      tailored to one target job's language and responsibilities, using only
      evidence the resume can prove and excluding blocklisted skills.
      Only runs when -jd is given.
+
+  5. GenerateCV.refine / ProfessionalCVGenerator.refine     Gemma 3 1B  temp=0.4
+     Purpose: user review and iterative revision (-review flag) - revise an
+     already-generated CV per free-text feedback, constrained to the same
+     evidence/blocklist (tailored mode) or candidate facts (profile mode) as
+     the original generation, so a revision can never introduce a new,
+     unproven claim.
 
 Why the temperatures differ: extraction (0.3) needs faithful, literal parsing
 of what is already on the page, not creative rewriting. Generation (0.4)

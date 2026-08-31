@@ -7,3 +7,6 @@ python main.py -input input/profiles -output output/profiles -jd input/job_descr
 
 Mandatory core task - no target job, just polish each candidate's own facts (omit -jd):
 python main.py -input input/profiles -output output/core
+
+Add -review to any run to interactively inspect/refine each CV before it's finalised:
+python main.py -input input/profiles -output output/profiles -jd input/job_description.txt -review
