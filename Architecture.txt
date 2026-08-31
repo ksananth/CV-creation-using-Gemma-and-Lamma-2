@@ -1,1 +1,83 @@
-Architecture
+CV Creation using LLMs - Architecture
+======================================
+
+Two pipelines share the same extraction/render building blocks:
+
+  A. Tailored pipeline (main.py)   - resumes matched and rewritten for one target job
+  B. Core-task pipeline (batch_main.py) - 10 unstructured profiles polished into CVs, no target job
+
+------------------------------------------------------------
+Pipeline A: main.py  (job-tailored CVs)
+------------------------------------------------------------
+Run:
+  py main.py -input <input_folder> -output <output_folder> -jd <job_description_file>
+
+Steps:
+1. Parse args (-input, -output, -jd); load every resume .txt in the input folder.
+2. Extract job description  -> extract_and_parse.py : ParseJob (Gemma via Ollama + LangChain)
+   - job description text -> {title, company, required_skills, preferred_skills, responsibilities, ...}
+   For each resume:
+3. Extract resume            -> extract_and_parse.py : ExtractResume (Gemma)
+   - resume text -> {name, email, phone, experience, skills, education, ...}
+4. Match skills               -> match_skills.py : MatchSkills (pure Python, no LLM)
+   - normalises skill phrases (aliases, filler words, protected multi-word terms)
+   - computes required/preferred coverage %
+   - produces fabrication_blocklist: skills the job wants that the resume cannot prove
+5. Retrieve evidence           -> retrieve_evidence.py : RetrieveEvidence (pure Python)
+   - splits resume prose into sentences
+   - finds the supporting sentence(s) for each matched skill
+   - falls back to "Listed in skills" when no sentence backs it up
+6. Generate tailored CV        -> generate_tailored_cv.py : GenerateCV (Gemma)
+   - model sees ONLY job details + evidence + blocklist, never the raw resume
+   - output: {summary, experience[].bullets, ordered_skills}
+   - hard post-generation filter strips any blocklisted skill that slips through anyway
+7. Render documents            -> render_document.py + document_style.py
+   - shared ATS-friendly styling: single column, standard font, plain black text,
+     plain-text section headings, real bullet lists
+   - writes both .docx (python-docx) and .pdf (reportlab) from the same CV JSON
+8. Save outputs to -output folder: per-resume stage JSON (*_extracted_resume.json,
+   *_match.json, *_evidence.json, *_generated_cv.json) plus the final CV docx/pdf,
+   and one shared parsed_job_description.json.
+
+------------------------------------------------------------
+Pipeline B: batch_main.py  (mandatory core task: 10 profiles -> 10 CVs)
+------------------------------------------------------------
+Run:
+  py batch_main.py
+
+Steps:
+1. Read every input/profiles/*.txt profile.
+2. Extract profile   -> extract_and_parse.py : ExtractResume (Gemma)
+3. Generate CV        -> generate_profile_cv.py : ProfessionalCVGenerator (Gemma)
+   - no target job; only polishes the candidate's own stated facts
+     (clearer summary, stronger action-verb bullets) - never invents employers,
+     numbers, titles, or tools not already present
+4. Quality check      -> quality_check.py (rule-based, no LLM)
+   - flags missing name/contact/experience/skills in the extraction
+   - flags empty summary, placeholder text, missing bullets, or an
+     unrecognised company introduced into the generated CV
+5. Render documents   -> render_document.py + document_style.py (same as Pipeline A)
+6. Save to output/core/: resumable - if a profile's extracted/generated JSON
+   already exists there, it is loaded instead of re-run, so an interrupted
+   batch can continue without redoing work.
+
+------------------------------------------------------------
+Shared building blocks
+------------------------------------------------------------
+- json_utils.py    : extract_json/invoke_json - pulls a JSON object out of an LLM
+                      response, repairing common Gemma mistakes (trailing commas,
+                      dropped closing quotes), retries on failure; save_json/load_json.
+- document_style.py: shared ATS-safe styling constants/helpers used by both .docx
+                      and .pdf renderers.
+- LLM backend      : Gemma via Ollama (langchain_ollama.OllamaLLM), orchestrated
+                      with LangChain PromptTemplate + chain.invoke() in every
+                      LLM-calling module.
+
+------------------------------------------------------------
+Design principle: no fabrication
+------------------------------------------------------------
+The tailored generator (Pipeline A) never sees the raw resume - only evidence
+snippets proven to exist in it, plus a blocklist of unprovable skills - and a
+code-level filter strips any blocklisted skill the model outputs anyway. This
+is enforced twice: once by what the prompt is given, and once by post-processing
+that does not trust the LLM to have followed instructions.
