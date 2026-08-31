@@ -74,6 +74,40 @@ Shared building blocks
                       LLM-calling module.
 
 ------------------------------------------------------------
+LLM used and purpose
+------------------------------------------------------------
+Model : Gemma (gemma:7b), served locally through Ollama. No cloud API calls -
+        inference runs entirely on-device, so no resume/job data leaves the
+        machine. Orchestrated with LangChain (PromptTemplate | OllamaLLM chain).
+
+Call sites:
+  1. ExtractResume            extract_and_parse.py        temp=0.3
+     Purpose: extract structured fields from a raw resume - name, contact,
+     years of experience, summary, work history, skills, education,
+     certifications, languages.
+
+  2. ParseJob                 extract_and_parse.py        temp=0.3
+     Purpose: extract structured fields from a raw job description - title,
+     company, experience level, required/preferred skills, responsibilities,
+     team size.
+
+  3. ProfessionalCVGenerator  generate_profile_cv.py      temp=0.4
+     Purpose: rewrite a candidate's own stated facts into a polished,
+     professional summary and achievement-style bullets - no target job,
+     so this only improves wording, never adds a skill or claim.
+
+  4. GenerateCV                generate_tailored_cv.py     temp=0.4
+     Purpose: rewrite the candidate's evidence-backed experience into a CV
+     tailored to one target job's language and responsibilities, using only
+     evidence the resume can prove and excluding blocklisted skills.
+
+Why two temperatures: extraction (0.3) needs faithful, literal parsing of
+what is already on the page, not creative rewriting. Generation (0.4) allows
+some latitude in phrasing/wording while the facts themselves stay pinned to
+whatever evidence or blocklist the prompt supplies - the model is never the
+source of truth for what the candidate did, only for how it is phrased.
+
+------------------------------------------------------------
 Design principle: no fabrication
 ------------------------------------------------------------
 The tailored generator (Pipeline A) never sees the raw resume - only evidence
