@@ -1,0 +1,17 @@
+{
+  "summary": "Seasoned data analyst with proficiency in Python for data cleaning and reporting. Seeking to leverage technical expertise in system design and API development to contribute as a senior frontend engineer at FinTech Inc.",
+  "experience": [
+    {
+      "position": "Data Analyst",
+      "company": "Nova Retail Pvt Ltd",
+      "duration": "March 2020 - Present",
+      "bullets": [
+        "Developed Python scripts to automate data cleaning processes.",
+        "Generated comprehensive Excel reports for data analysis and presentation."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "python"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "evidence": {},
+  "fabrication_blocklist": [
+    "android",
+    "kotlin",
+    "python",
+    "java",
+    "aws",
+    "docker",
+    "payment systems"
+  ]
+}

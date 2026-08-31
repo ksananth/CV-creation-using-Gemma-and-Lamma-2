@@ -5,14 +5,12 @@
   "experience_level": "senior",
   "years_required": "10+",
   "required_skills": [
-    "Android",
-    "Kotlin",
-    "Python",
-    "Java"
+    "Android, kotlin, Python, Java, or similar",
+    "AWS knowledge",
+    "Docker"
   ],
   "preferred_skills": [
-    "Payment systems experience",
-    "Leadership background"
+    "Payment systems experience"
   ],
   "responsibilities": [
     "Design scalable systems",

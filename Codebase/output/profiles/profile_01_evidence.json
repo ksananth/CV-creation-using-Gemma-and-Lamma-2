@@ -1,0 +1,18 @@
+{
+  "evidence": {
+    "python": {
+      "snippets": [
+        "Did Excel reporting and some Python scripting for data cleaning."
+      ],
+      "source": "skills_list"
+    }
+  },
+  "fabrication_blocklist": [
+    "android",
+    "kotlin",
+    "java",
+    "aws",
+    "docker",
+    "payment systems"
+  ]
+}

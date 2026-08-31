@@ -17,19 +17,19 @@
       "company": "St. Anne's Hospital",
       "position": "Staff Nurse",
       "duration": "2018-2021",
-      "location": "N/A",
-      "description": "N/A"
+      "location": "",
+      "description": ""
     }
   ],
   "skills": [
-    "Patient monitoring",
     "Ventilator management",
+    "Patient monitoring",
     "Training"
   ],
   "education": [
     {
       "degree": "GNM Nursing diploma",
-      "field": "Nursing",
+      "field": "",
       "school": "Mumbai School of Nursing",
       "graduation_year": "2017"
     }

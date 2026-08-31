@@ -1,0 +1,19 @@
+{
+  "summary": "Seasoned healthcare professional transitioning into frontend engineering. Leveraging experience in patient care to design scalable systems and lead architecture decisions.",
+  "experience": [
+    {
+      "position": "ICU Nurse",
+      "company": "Lakeview General Hospital",
+      "duration": "Jan 2021 - present",
+      "bullets": [
+        "Successfully managed critical patient care, prioritizing workload and adapting to dynamic situations.",
+        "Collaborated effectively with diverse teams to provide compassionate and efficient patient care."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "Design scalable systems",
+    "Lead architecture decisions",
+    "Develop APIs"
+  ]
+}

@@ -1,1 +1,1 @@
-python main.py
+python main.py -input input/profiles -output output/profiles -jd input/job_description.txt

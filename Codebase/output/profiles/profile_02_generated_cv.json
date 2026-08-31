@@ -1,0 +1,19 @@
+{
+  "summary": "Seasoned frontend engineer with extensive experience in system design and architecture. Skilled in leading and mentoring teams to deliver scalable and robust web applications.",
+  "experience": [
+    {
+      "position": "Design Lead",
+      "company": "Torque Auto Systems",
+      "duration": "2019-present",
+      "bullets": [
+        "Led architecture discussions and decisions for scalable web systems.",
+        "Developed and implemented APIs to enhance application performance and functionality."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "Design scalable systems",
+    "Lead architecture decisions",
+    "Develop APIs"
+  ]
+}

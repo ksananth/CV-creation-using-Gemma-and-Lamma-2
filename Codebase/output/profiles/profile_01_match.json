@@ -1,0 +1,60 @@
+{
+  "required": {
+    "matched": [
+      "python"
+    ],
+    "missing": [
+      "android",
+      "kotlin",
+      "java",
+      "aws",
+      "docker"
+    ],
+    "sources": {
+      "python": "skills_list"
+    },
+    "coverage_pct": 16.7
+  },
+  "preferred": {
+    "matched": [],
+    "missing": [
+      "payment systems"
+    ],
+    "sources": {},
+    "coverage_pct": 0.0
+  },
+  "extra": [
+    "sql",
+    "power bi",
+    "excel",
+    "tableau"
+  ],
+  "fabrication_blocklist": [
+    "android",
+    "kotlin",
+    "java",
+    "aws",
+    "docker",
+    "payment systems"
+  ],
+  "normalized": {
+    "resume_skills": [
+      "sql",
+      "power bi",
+      "excel",
+      "python",
+      "tableau"
+    ],
+    "required_skills": [
+      "android",
+      "kotlin",
+      "python",
+      "java",
+      "aws",
+      "docker"
+    ],
+    "preferred_skills": [
+      "payment systems"
+    ]
+  }
+}
