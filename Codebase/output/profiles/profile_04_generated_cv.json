@@ -1,0 +1,18 @@
+{
+  "summary": "Seasoned Frontend Engineer with proficiency in Python, Node.js, and React, seeking to leverage expertise in scalable system design and API development to contribute to FinTech Inc's innovative products.",
+  "experience": [
+    {
+      "position": "Software Developer",
+      "company": "ByteForge Technologies",
+      "duration": "June 2021 - Present",
+      "bullets": [
+        "Developed scalable systems using Python and Node.js technologies.",
+        "Led architecture discussions and made key decisions impacting system performance."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "python",
+    "aws"
+  ]
+}
