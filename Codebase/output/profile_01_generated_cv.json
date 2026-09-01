@@ -1,0 +1,33 @@
+{
+  "summary": "Highly motivated Android Developer with a strong foundation in Kotlin and Java, specializing in building high-performance, scalable mobile applications. Possessing extensive experience in MVVM architecture, leveraging Jetpack components for seamless development and robust API integration, and a proven track record of delivering clean, testable code through rigorous testing and code reviews.",
+  "experience": [
+    {
+      "position": "Android Developer",
+      "company": "Nova Retail Pvt Ltd",
+      "duration": "March 2020 - Present",
+      "bullets": [
+        "Designed and maintained high-performance Android applications in Kotlin and Java using a robust MVVM architecture, effectively utilizing Jetpack components like LiveData, ViewModel, and Navigation, Retrofit, OkHttp, Room Database, and Dagger/Hilt for dependency injection and testing.",
+        "Implemented comprehensive unit and integration tests, ensuring code quality and reliability through rigorous testing methodologies.",
+        "Wrote clean, well-documented, and testable code, adhering to established coding standards and best practices.",
+        "Troubleshooted and debugged production issues, promptly addressing and resolving critical issues to maintain application stability."
+      ]
+    }
+  ],
+  "ordered_skills": [
+    "kotlin",
+    "java",
+    "mvvm",
+    "jetpack",
+    "room",
+    "dagger",
+    "hilt",
+    "jetpack compose",
+    "Android Studio",
+    "Android SDK",
+    "XML layouts",
+    "Firebase",
+    "Retrofit",
+    "Room Database"
+  ],
+  "ats_score": 50.0
+}

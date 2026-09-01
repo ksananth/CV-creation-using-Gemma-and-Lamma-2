@@ -88,7 +88,14 @@ Steps:
 9. Save outputs to -output folder: per-resume stage JSON
    (*_extracted_resume.json, [*_match.json, *_evidence.json,] *_generated_cv.json)
    plus the final CV docx/pdf, and (tailored mode only) one shared
-   parsed_job_description.json.
+   parsed_job_description.json. In tailored mode, *_generated_cv.json also
+   carries an "ats_score" field - the % of the job's required skills the
+   resume can prove (match_skills.py's required coverage_pct). Once the
+   whole batch finishes, every generated PDF is listed with its ATS Score
+   (N/A in profile mode, where there's no job to score against).
+10. Pass -printJson to also print every stage's JSON (parsed job description,
+    extracted resume, match, evidence, generated CV) to stdout as it's
+    produced or loaded, in addition to writing it to disk. Omitted by default.
 
 ------------------------------------------------------------
 Shared building blocks

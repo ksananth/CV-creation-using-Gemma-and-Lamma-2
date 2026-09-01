@@ -1,0 +1,45 @@
+{
+  "name": "Priya Nair",
+  "email": "priya.nair.test@email.com",
+  "phone": "+1-98765-43210",
+  "location": "Bangalore",
+  "years_experience": "7+",
+  "summary": "Professional summary",
+  "experience": [
+    {
+      "company": "Nova Retail Pvt Ltd",
+      "position": "Android developer",
+      "duration": "March 2020 - Present",
+      "location": "Bangalore",
+      "description": "Design and maintain high-performance Android apps in Kotlin and Java using MVVM architecture, work with Jetpack components like LiveData, ViewModel, and Navigation, use Retrofit and OkHttp for networking, Room Database for local storage, and Dagger/Hilt for dependency injection, and write JUnit and Espresso tests for my code."
+    }
+  ],
+  "skills": [
+    "Kotlin",
+    "Java",
+    "Android Studio",
+    "Android SDK",
+    "XML layouts",
+    "MVVM",
+    "Jetpack Compose",
+    "Firebase",
+    "Retrofit",
+    "Room Database",
+    "Dagger",
+    "Hilt"
+  ],
+  "education": [
+    {
+      "degree": "B.Sc",
+      "field": "Computer Science",
+      "school": "Bangalore University",
+      "graduation_year": "2016"
+    }
+  ],
+  "certifications": [
+    "Cert1"
+  ],
+  "languages": [
+    "Language1"
+  ]
+}

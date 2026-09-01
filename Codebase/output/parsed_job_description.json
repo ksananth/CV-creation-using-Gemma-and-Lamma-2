@@ -1,0 +1,43 @@
+{
+  "title": "Android Developer",
+  "company": "",
+  "location": "",
+  "experience_level": "mid-level to senior",
+  "years_required": "3-7+",
+  "required_skills": [
+    "Kotlin",
+    "Java",
+    "MVVM",
+    "Clean Architecture",
+    "Jetpack components",
+    "Room Database",
+    "Dagger/Hilt",
+    "Version Control: Git",
+    "APIs & Integration: REST APIs",
+    "Testing: JUnit",
+    "Performance: Memory management",
+    "UI/UX: Material Design principles"
+  ],
+  "preferred_skills": [
+    "Jetpack Compose",
+    "Firebase integration",
+    "CI/CD pipelines",
+    "RxJava/Coroutines",
+    "Background services & notifications",
+    "Payments integration",
+    "App security best practices",
+    "Publishing to Google Play Store"
+  ],
+  "responsibilities": [
+    "Design, develop, and maintain high-performance Android applications",
+    "Collaborate with product managers and designers to define app features",
+    "Write clean, well-documented, and testable code",
+    "Conduct code reviews and mentor junior developers",
+    "Optimize app performance and memory usage",
+    "Implement UI/UX designs using Android best practices",
+    "Troubleshoot and debug production issues",
+    "Participate in agile development cycles (sprints, standups)",
+    "Stay updated with latest Android technologies and best practices"
+  ],
+  "team_size": ""
+}

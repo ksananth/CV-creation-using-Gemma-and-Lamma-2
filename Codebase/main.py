@@ -32,6 +32,11 @@ accept it by pressing Enter.
 Pass -printJson to also print every stage's JSON (parsed job description,
 extracted resume, match, evidence, generated CV) to stdout as it's produced
 or loaded. Omit it and only the normal progress/summary lines are printed.
+
+In tailored mode (-jd given), each generated CV's JSON gets an "ats_score"
+field - the % of the job's required skills the resume can prove (same
+number as match_skills.py's required coverage_pct). Once the whole batch
+finishes, every generated PDF is listed with its ATS Score.
 """
 
 import argparse
@@ -146,6 +151,10 @@ def extract_resume(resume_path, output_dir, extractor, print_json_flag=False):
 
 
 def generate_resume(resume_path, resume_data, issues, job_data, output_dir, matcher, retriever, generator, renderer, review=False, print_json_flag=False):
+    """Generate, review, and render one resume's CV. Returns (error, result):
+    on failure error is a message and result is None; on success error is
+    None and result is {"pdf_path", "ats_score"} (ats_score is None outside
+    tailored mode, where there's no job to score coverage against)."""
     stem = resume_path.stem
     generated_path = output_dir / f"{stem}_generated_cv.json"
     match_path = output_dir / f"{stem}_match.json"
@@ -168,7 +177,7 @@ def generate_resume(resume_path, resume_data, issues, job_data, output_dir, matc
 
         generated_cv = generator.run(resume_data, job_data, match_data, evidence_data)
         if not generated_cv:
-            return "generation failed: Gemma 3 did not return valid JSON"
+            return "generation failed: Gemma 3 did not return valid JSON", None
         save_json(generated_path, generated_cv)
 
         if match_data["fabrication_blocklist"]:
@@ -176,11 +185,18 @@ def generate_resume(resume_path, resume_data, issues, job_data, output_dir, matc
     else:
         generated_cv = generator.run(resume_data)
         if not generated_cv:
-            return "generation failed: Gemma 3 did not return valid JSON"
+            return "generation failed: Gemma 3 did not return valid JSON", None
         save_json(generated_path, generated_cv)
 
     if review:
         generated_cv = review_loop(generated_cv, resume_data, job_data, match_data, evidence_data, generator)
+
+    # ATS Score is the % of the job's required skills the resume can prove -
+    # only meaningful in tailored mode, where there's a job to score against.
+    if match_data is not None:
+        generated_cv["ats_score"] = match_data["required"]["coverage_pct"]
+        save_json(generated_path, generated_cv)
+    elif review:
         save_json(generated_path, generated_cv)
 
     if print_json_flag:
@@ -204,7 +220,7 @@ def generate_resume(resume_path, resume_data, issues, job_data, output_dir, matc
     )
 
     print(f"  {resume_path.name} -> {paths['docx_path']}" + (f"  [warnings: {', '.join(issues)}]" if issues else ""))
-    return None
+    return None, {"pdf_path": paths["pdf_path"], "ats_score": generated_cv.get("ats_score")}
 
 
 def main():
@@ -270,17 +286,26 @@ def main():
     renderer = DocumentGenerator()
 
     print(f"Creating ATS friendly Resumes in {output_dir}")
+    generated = []
     for resume_path, resume_data, issues in extracted:
         try:
-            error = generate_resume(resume_path, resume_data, issues, job_data, output_dir, matcher, retriever, generator, renderer, review=args.review, print_json_flag=args.print_json)
+            error, result = generate_resume(resume_path, resume_data, issues, job_data, output_dir, matcher, retriever, generator, renderer, review=args.review, print_json_flag=args.print_json)
         except Exception as e:
-            error = f"crashed: {e}"
+            error, result = f"crashed: {e}", None
         if error:
             failures.append((resume_path.name, error))
             print(f"  FAILED {resume_path.name}: {error}")
+        else:
+            generated.append(result)
 
     ok = len(resume_files) - len(failures)
     print(f"\nCompleted: {ok}/{len(resume_files)} ATS-friendly CVs generated in {output_dir}")
+
+    if generated:
+        print("\nGenerated PDFs:")
+        for r in generated:
+            score = f"{r['ats_score']}%" if r["ats_score"] is not None else "N/A"
+            print(f"  {Path(r['pdf_path']).name} - ATS Score {score}")
 
 
 if __name__ == "__main__":

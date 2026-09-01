@@ -1,4 +1,8 @@
-# Personal resume and CVs generated from it - contains real PII, never publish
+# Personal resume and CVs/stage JSON generated from it - contains real PII, never publish
 Codebase/input/profiles/ananth resume.pdf
 Codebase/output/CV_Ananth_K_S.docx
 Codebase/output/CV_Ananth_K_S.pdf
+Codebase/output/ananth resume_evidence.json
+Codebase/output/ananth resume_extracted_resume.json
+Codebase/output/ananth resume_generated_cv.json
+Codebase/output/ananth resume_match.json
