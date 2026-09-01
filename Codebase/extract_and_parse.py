@@ -76,7 +76,15 @@ class ExtractResume:
     """Extract structured resume fields from free text using Llama 2"""
 
     def __init__(self):
-        self.chain = RESUME_PROMPT | OllamaLLM(model="llama2:7b", temperature=0.3)
+        # format="json" stops the model rambling past the closing brace
+        # (fewer malformed-JSON retries, each of which costs a full
+        # regeneration); num_predict bounds worst-case runaway output;
+        # keep_alive keeps the model loaded across the whole batch instead
+        # of unloading between calls.
+        self.chain = RESUME_PROMPT | OllamaLLM(
+            model="llama2:7b", temperature=0.3, format="json",
+            num_predict=1024, keep_alive="15m",
+        )
 
     def run(self, resume_text):
         data = invoke_json(self.chain, {"resume_text": resume_text})
@@ -87,7 +95,10 @@ class ParseJob:
     """Extract structured job fields from free text using Llama 2"""
 
     def __init__(self):
-        self.chain = JOB_PROMPT | OllamaLLM(model="llama2:7b", temperature=0.3)
+        self.chain = JOB_PROMPT | OllamaLLM(
+            model="llama2:7b", temperature=0.3, format="json",
+            num_predict=700, keep_alive="15m",
+        )
 
     def run(self, job_text):
         data = invoke_json(self.chain, {"job_text": job_text})

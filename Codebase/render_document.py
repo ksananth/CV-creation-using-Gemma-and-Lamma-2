@@ -5,9 +5,10 @@ CV data shape, differing only in the experience heading and filename.
 """
 
 from docx import Document
+from reportlab.lib.colors import black
 from reportlab.lib.pagesizes import LETTER
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, ListFlowable, ListItem, HRFlowable
 
 import document_style as style
 
@@ -54,6 +55,15 @@ class DocumentGenerator:
                 line = " ".join(filter(None, [edu.get("degree", ""), edu.get("field", "")]))
                 doc.add_paragraph(f"{line} - {edu.get('school', '')} ({edu.get('graduation_year', '')})")
 
+        if person_data.get("certifications"):
+            style.add_section_heading(doc, "Certifications")
+            for cert in person_data["certifications"]:
+                doc.add_paragraph(style.format_certification(cert), style="List Bullet")
+
+        if person_data.get("languages"):
+            style.add_section_heading(doc, "Languages")
+            doc.add_paragraph(", ".join(person_data["languages"]))
+
         doc.save(path)
 
     @staticmethod
@@ -65,15 +75,23 @@ class DocumentGenerator:
             topMargin=0.75 * inch, bottomMargin=0.75 * inch,
         )
 
+        def heading(text):
+            """Bold heading plus a bottom rule, mirroring the Word renderer's
+            bordered section headings so the two outputs read the same way."""
+            return [
+                Paragraph(text.upper(), styles["ATSHeading"]),
+                HRFlowable(width="100%", thickness=0.75, color=black, spaceAfter=6),
+            ]
+
         contact = [person_data.get("email", ""), person_data.get("phone", ""), person_data.get("location", "")]
         story = [
             Paragraph(person_data.get("name", ""), styles["ATSName"]),
-            Paragraph(" | ".join(filter(None, contact)), styles["Normal"]),
-            Paragraph("PROFESSIONAL SUMMARY", styles["ATSHeading"]),
+            Paragraph(" | ".join(filter(None, contact)), styles["ATSContact"]),
+            *heading("Professional Summary"),
             Paragraph(generated_cv.get("summary", ""), styles["Normal"]),
-            Paragraph("SKILLS", styles["ATSHeading"]),
+            *heading("Skills"),
             Paragraph(", ".join(generated_cv.get("ordered_skills", [])), styles["Normal"]),
-            Paragraph(experience_heading.upper(), styles["ATSHeading"]),
+            *heading(experience_heading),
         ]
 
         for job in generated_cv.get("experience", []):
@@ -87,15 +105,26 @@ class DocumentGenerator:
                     [ListItem(Paragraph(b, styles["Normal"])) for b in job["bullets"]],
                     bulletType="bullet",
                 ))
-            story.append(Spacer(1, 0.08 * inch))
+            story.append(Spacer(1, 0.1 * inch))
 
         if person_data.get("education"):
-            story.append(Paragraph("EDUCATION", styles["ATSHeading"]))
+            story.extend(heading("Education"))
             for edu in person_data["education"]:
                 line = " ".join(filter(None, [edu.get("degree", ""), edu.get("field", "")]))
                 story.append(Paragraph(
                     f"{line} - {edu.get('school', '')} ({edu.get('graduation_year', '')})",
                     styles["Normal"],
                 ))
+
+        if person_data.get("certifications"):
+            story.extend(heading("Certifications"))
+            story.append(ListFlowable(
+                [ListItem(Paragraph(style.format_certification(c), styles["Normal"])) for c in person_data["certifications"]],
+                bulletType="bullet",
+            ))
+
+        if person_data.get("languages"):
+            story.extend(heading("Languages"))
+            story.append(Paragraph(", ".join(person_data["languages"]), styles["Normal"]))
 
         doc.build(story)

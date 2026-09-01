@@ -16,19 +16,30 @@ Resumable: a resume whose extracted/generated JSON already exists in the
 output folder is loaded instead of re-run, so an interrupted batch can
 continue without redoing work.
 
+Runs in two batched phases rather than interleaving per resume: all
+extractions (Llama 2) first, then all generations (Gemma 3). The two
+models don't both fit in VRAM on modest hardware, so alternating them
+per resume forces a reload every time; batching keeps each model loaded
+for its whole phase instead of swapping 2x per resume.
+
 Pass -review to inspect each generated CV interactively before it's
 finalised: it prints ATS coverage (tailored mode), which matched skills
 don't actually appear in the rendered Skills line, and quality_check
 warnings, then lets you type free-text feedback to have the LLM revise the
 CV (still constrained to the same evidence/blocklist), looping until you
 accept it by pressing Enter.
+
+Pass -printJson to also print every stage's JSON (parsed job description,
+extracted resume, match, evidence, generated CV) to stdout as it's produced
+or loaded. Omit it and only the normal progress/summary lines are printed.
 """
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
-sys.stdout.reconfigure(encoding="utf-8")
+sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
 
 from document_reader import read_text, SUPPORTED_EXTENSIONS
 from extract_and_parse import ExtractResume, ParseJob
@@ -51,7 +62,15 @@ def parse_args():
                               "omit to polish each resume on its own, with no target job)")
     parser.add_argument("-review", dest="review", action="store_true",
                          help="Interactively review/refine each generated CV before finalising it")
+    parser.add_argument("-printJson", dest="print_json", action="store_true",
+                         help="Print every stage's JSON (parsed job description, extracted resume, "
+                              "match, evidence, generated CV) to stdout as it's produced or loaded")
     return parser.parse_args()
+
+
+def print_json(label, data):
+    print(f"\n--- {label} (JSON) ---")
+    print(json.dumps(data, indent=2, ensure_ascii=False))
 
 
 def unrendered_matched_skills(generated_cv, match_data):
@@ -105,22 +124,33 @@ def review_loop(generated_cv, resume_data, job_data, match_data, evidence_data, 
         generated_cv = revised
 
 
-def process_resume(resume_path, job_data, output_dir, extractor, matcher, retriever, generator, renderer, review=False):
+def extract_resume(resume_path, output_dir, extractor, print_json_flag=False):
+    """Extract (or load cached) structured resume data. Returns
+    (resume_data, issues, error) - error is set (and the other two are None)
+    on failure."""
     stem = resume_path.stem
     extracted_path = output_dir / f"{stem}_extracted_resume.json"
-    generated_path = output_dir / f"{stem}_generated_cv.json"
-    match_path = output_dir / f"{stem}_match.json"
-    evidence_path = output_dir / f"{stem}_evidence.json"
 
     if extracted_path.exists():
         resume_data = load_json(extracted_path)
     else:
         resume_data = extractor.run(read_text(resume_path))
         if not resume_data:
-            return "extraction failed: Llama 2 did not return valid JSON"
+            return None, None, "extraction failed: Llama 2 did not return valid JSON"
         save_json(extracted_path, resume_data)
 
-    issues = check_extraction(resume_data)
+    if print_json_flag:
+        print_json(f"{resume_path.name} extracted_resume", resume_data)
+
+    return resume_data, check_extraction(resume_data), None
+
+
+def generate_resume(resume_path, resume_data, issues, job_data, output_dir, matcher, retriever, generator, renderer, review=False, print_json_flag=False):
+    stem = resume_path.stem
+    generated_path = output_dir / f"{stem}_generated_cv.json"
+    match_path = output_dir / f"{stem}_match.json"
+    evidence_path = output_dir / f"{stem}_evidence.json"
+
     match_data, evidence_data = None, None
 
     if generated_path.exists():
@@ -152,6 +182,13 @@ def process_resume(resume_path, job_data, output_dir, extractor, matcher, retrie
     if review:
         generated_cv = review_loop(generated_cv, resume_data, job_data, match_data, evidence_data, generator)
         save_json(generated_path, generated_cv)
+
+    if print_json_flag:
+        if match_data is not None:
+            print_json(f"{resume_path.name} match", match_data)
+        if evidence_data is not None:
+            print_json(f"{resume_path.name} evidence", evidence_data)
+        print_json(f"{resume_path.name} generated_cv", generated_cv)
 
     issues += check_generated_cv(generated_cv, resume_data)
 
@@ -205,18 +242,37 @@ def main():
             print("JD parsing failed: Llama 2 did not return valid JSON")
             return
         save_json(output_dir / "parsed_job_description.json", job_data)
+        if args.print_json:
+            print_json("parsed_job_description", job_data)
 
+    # Phase 1: extract every resume with Llama 2 before touching Gemma 3 at
+    # all, so the extraction model stays loaded for the whole batch instead
+    # of swapping with the generation model on every single resume.
     extractor = ExtractResume()
+    extracted = []
+    failures = []
+    for resume_path in resume_files:
+        print(f"Parsing {resume_path.name}")
+        try:
+            resume_data, issues, error = extract_resume(resume_path, output_dir, extractor, print_json_flag=args.print_json)
+        except Exception as e:
+            resume_data, issues, error = None, None, f"crashed: {e}"
+        if error:
+            failures.append((resume_path.name, error))
+            print(f"  FAILED {resume_path.name}: {error}")
+        else:
+            extracted.append((resume_path, resume_data, issues))
+
+    # Phase 2: generate every CV with Gemma 3, now that Llama 2 is done.
     matcher = MatchSkills() if job_data else None
     retriever = RetrieveEvidence() if job_data else None
     generator = GenerateCV() if job_data else ProfessionalCVGenerator()
     renderer = DocumentGenerator()
 
     print(f"Creating ATS friendly Resumes in {output_dir}")
-    failures = []
-    for resume_path in resume_files:
+    for resume_path, resume_data, issues in extracted:
         try:
-            error = process_resume(resume_path, job_data, output_dir, extractor, matcher, retriever, generator, renderer, review=args.review)
+            error = generate_resume(resume_path, resume_data, issues, job_data, output_dir, matcher, retriever, generator, renderer, review=args.review, print_json_flag=args.print_json)
         except Exception as e:
             error = f"crashed: {e}"
         if error:
