@@ -1,22 +1,44 @@
-SENIOR FRONTEND ENGINEER
-Company: FinTech Inc
-Location: San Francisco
- 
-ABOUT THE ROLE
-We're seeking a Senior Frontend Engineer...
- 
-KEY RESPONSIBILITIES
-- Design scalable systems
-- Lead architecture decisions
-- Develop APIs
-- Mentor frontend engineers
- 
-REQUIRED QUALIFICATIONS
-- 10+ years frontend experience
-- Android, kotlin, Python, Java, or similar
-- AWS knowledge
-- Docker
- 
-PREFERRED
-- Payment systems experience
-- Leadership background
+Android Developer
+
+Position Level: Mid-level to Senior
+Experience Required: 3-7+ years
+
+Key Responsibilities:
+Design, develop, and maintain high-performance Android applications
+Collaborate with product managers and designers to define app features
+Write clean, well-documented, and testable code
+Conduct code reviews and mentor junior developers
+Optimize app performance and memory usage
+Implement UI/UX designs using Android best practices
+Troubleshoot and debug production issues
+Participate in agile development cycles (sprints, standups)
+Stay updated with latest Android technologies and best practices
+Required Skills:
+Languages: Kotlin, Java
+Android Development: Android Studio, Android SDK, XML layouts
+Architecture: MVVM, MVC, Clean Architecture
+Libraries & Frameworks:
+Jetpack components (LiveData, ViewModel, Navigation, WorkManager)
+Retrofit, OkHttp (networking)
+Room Database
+Dagger/Hilt (dependency injection)
+Version Control: Git
+APIs & Integration: REST APIs, JSON, OAuth
+Testing: JUnit, Espresso, Mockito
+Performance: Memory management, battery optimization
+UI/UX: Material Design principles
+Nice-to-Have Skills:
+Experience with Jetpack Compose
+Firebase integration
+CI/CD pipelines
+RxJava/Coroutines
+Background services & notifications
+Payments integration
+App security best practices
+Publishing to Google Play Store
+Preferred Qualifications:
+Bachelor's degree in Computer Science or related field
+Published apps on Google Play Store
+Experience in fintech or banking apps
+Google Associate Android Developer certification
+Open source contributions

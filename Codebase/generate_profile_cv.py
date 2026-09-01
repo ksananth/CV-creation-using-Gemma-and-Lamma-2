@@ -9,7 +9,7 @@ import json
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
-from json_utils import invoke_json
+from json_utils import invoke_json, merge_unique
 
 REFINE_PROMPT = PromptTemplate(
     input_variables=["current_cv", "raw_summary", "experience_lines", "skills", "feedback"],
@@ -84,7 +84,11 @@ class ProfessionalCVGenerator:
             ) or "(none provided)",
             "skills": ", ".join(profile_data.get("skills", [])),
         }
-        return invoke_json(self.chain, inputs)
+        data = invoke_json(self.chain, inputs)
+        if data is None:
+            return None
+        data["ordered_skills"] = merge_unique(data.get("ordered_skills", []), profile_data.get("skills", []))
+        return data
 
     def refine(self, current_cv, feedback, profile_data):
         """Revise an already-generated CV per free-text user feedback,

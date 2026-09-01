@@ -49,6 +49,22 @@ def invoke_json(chain, inputs, attempts=3):
     return None
 
 
+def merge_unique(primary, secondary, exclude=()):
+    """Combine two lists, keeping primary's items and order first, then
+    appending anything from secondary not already present (case-insensitive)
+    or in exclude. Used to guarantee a generator's output doesn't silently
+    drop items (e.g. skills) the model chose not to echo back."""
+    excluded = {e.lower() for e in exclude}
+    seen = {p.lower() for p in primary}
+    merged = list(primary)
+    for item in secondary:
+        low = item.lower()
+        if low not in seen and low not in excluded:
+            merged.append(item)
+            seen.add(low)
+    return merged
+
+
 def save_json(path, data):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2)

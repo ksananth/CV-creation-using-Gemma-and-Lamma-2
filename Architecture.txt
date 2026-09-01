@@ -14,6 +14,13 @@ Run:
   -jd omitted  -> profile mode: polish each candidate's own facts, no target job
                   (this is the mandatory core task: 10 profiles -> 10 CVs)
 
+Runs in two batched phases, not interleaved per resume: ALL resumes are
+extracted (Llama 2) before ANY are generated (Gemma 3). On hardware where
+the two models don't both fit in VRAM, alternating models every resume
+would force a reload each time; batching keeps each model loaded for its
+entire phase, so a batch of N resumes costs one model swap total instead
+of up to 2N.
+
 Steps:
 1. Parse args (-input, -output, optional -jd); find every resume file
    (.txt, .pdf, or .docx) in the input folder.
@@ -42,15 +49,26 @@ Steps:
       each matched skill, falls back to "Listed in skills" when none exists.
     - Generate CV      -> generate_tailored_cv.py : GenerateCV (Gemma 3 1B)
       model sees ONLY job details + evidence + blocklist, never the raw
-      resume; output {summary, experience[].bullets, ordered_skills}; a hard
-      post-generation filter strips any blocklisted skill that slips through.
+      resume; ONE call covers the candidate's ENTIRE work history (not just
+      the most recent role) - output {summary, experience[].bullets,
+      ordered_skills}. Two post-generation safety nets, since the prompt
+      alone isn't trusted: a hard filter strips any blocklisted skill that
+      slips through, and ordered_skills is merged with the candidate's full
+      original skill list (json_utils.merge_unique) so a skill the model
+      just didn't mention isn't silently dropped from the CV.
 6b. Profile mode (-jd omitted):
     - Generate CV      -> generate_profile_cv.py : ProfessionalCVGenerator
       (Gemma 3 1B) - no target job; only polishes the candidate's own stated
       facts (clearer summary, stronger action-verb bullets) - never invents
-      employers, numbers, titles, or tools not already present.
+      employers, numbers, titles, or tools not already present. Same
+      ordered_skills merge safety net as tailored mode (no blocklist here,
+      since there's no target job to exclude skills for).
     - Both generation steps are resumable the same way as extraction, via
       <stem>_generated_cv.json.
+    - Certifications, languages, and education are never sent to the LLM at
+      all - render_document.py pulls them straight from the extracted
+      resume_data (like education always did), so they can't be dropped,
+      reworded, or fabricated by generation.
 7. Quality check (generated CV) -> quality_check.py : check_generated_cv
    (rule-based, no LLM) - flags empty summary, placeholder text, missing
    bullets, or an unrecognised company introduced into the generated CV.

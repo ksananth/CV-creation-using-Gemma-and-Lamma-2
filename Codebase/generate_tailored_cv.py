@@ -14,7 +14,7 @@ import json
 from langchain_ollama import OllamaLLM
 from langchain_core.prompts import PromptTemplate
 
-from json_utils import invoke_json
+from json_utils import invoke_json, merge_unique
 
 REFINE_PROMPT = PromptTemplate(
     input_variables=["current_cv", "evidence_lines", "blocklist", "feedback"],
@@ -46,7 +46,7 @@ Return ONLY valid JSON in the same shape as CURRENT CV (no markdown, no explanat
 PROMPT = PromptTemplate(
     input_variables=[
         "job_title", "company", "responsibilities",
-        "evidence_lines", "blocklist", "position", "duration",
+        "evidence_lines", "blocklist", "work_history",
     ],
     template="""You are tailoring a real candidate's CV for a specific job.
 
@@ -56,19 +56,22 @@ RESPONSIBILITIES: {responsibilities}
 EVIDENCE FROM THE CANDIDATE'S ACTUAL RESUME (the only facts you may use):
 {evidence_lines}
 
-CURRENT ROLE: {position} ({duration})
+CANDIDATE'S FULL WORK HISTORY (produce one tailored experience entry for
+EVERY role listed here, in the same order - do not drop any role):
+{work_history}
 
 STRICT RULES:
 - Use ONLY the evidence above. Do not invent achievements, numbers, or tools.
 - NEVER mention or imply these skills, the candidate cannot prove them: {blocklist}
 - Rephrase evidence into achievement-style bullet points matching the job's language.
 - If evidence for a skill is only "Listed in skills", write a short, general bullet - do not invent a specific project for it.
+- Return exactly one experience entry per role in CANDIDATE'S FULL WORK HISTORY, same order, same company/duration.
 
 Return ONLY valid JSON (no markdown, no explanations):
 {{
     "summary": "2-3 sentence professional summary tailored to this job, using only the evidence given",
     "experience": [
-        {{"position": "{position}", "company": "current company", "duration": "{duration}", "bullets": ["Achievement bullet 1", "Achievement bullet 2"]}}
+        {{"position": "...", "company": "...", "duration": "...", "bullets": ["Achievement bullet 1", "Achievement bullet 2"]}}
     ],
     "ordered_skills": ["skill1", "skill2"]
 }}""",
@@ -95,7 +98,7 @@ class GenerateCV:
     def run(self, resume_data, job_data, match_data, evidence_data):
         evidence = evidence_data["evidence"]
         blocklist = evidence_data["fabrication_blocklist"]
-        current_job = (resume_data.get("experience") or [{}])[0]
+        original_jobs = resume_data.get("experience", []) or []
 
         inputs = {
             "job_title": job_data.get("title", ""),
@@ -106,20 +109,28 @@ class GenerateCV:
                 for skill, info in evidence.items()
             ) or "(none)",
             "blocklist": ", ".join(blocklist) or "(none)",
-            "position": current_job.get("position", ""),
-            "duration": current_job.get("duration", ""),
+            "work_history": "\n".join(
+                f"- {job.get('position', '')} at {job.get('company', '')} "
+                f"({job.get('duration', '')}): {job.get('description', '')}"
+                for job in original_jobs
+            ) or "(none provided)",
         }
 
         data = invoke_json(self.chain, inputs)
         if data is None:
             return None
 
-        # The model already knows the real company from CURRENT ROLE context,
-        # but pin it from resume_data anyway rather than trust free-form output.
-        for job in data.get("experience", []):
-            job["company"] = current_job.get("company", "")
+        # The model already knows each role's real company/duration from
+        # WORK HISTORY context, but pin them from resume_data by position
+        # anyway rather than trust free-form output.
+        for i, job in enumerate(data.get("experience", [])):
+            if i < len(original_jobs):
+                job["company"] = original_jobs[i].get("company", "")
+                job["duration"] = original_jobs[i].get("duration", "")
 
-        return _strip_blocklisted(data, blocklist)
+        data = _strip_blocklisted(data, blocklist)
+        data["ordered_skills"] = merge_unique(data["ordered_skills"], resume_data.get("skills", []), exclude=blocklist)
+        return data
 
     def refine(self, current_cv, feedback, evidence_data):
         """Revise an already-generated CV per free-text user feedback,
