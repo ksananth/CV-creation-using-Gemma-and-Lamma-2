@@ -3,8 +3,9 @@
 Usage:
     py main.py -input <input_folder> -output <output_folder> [-jd <job_description_file>]
 
-Reads every resume .txt file from the input folder and writes an ATS-friendly
-CV (.docx/.pdf) plus stage JSON for each resume into the output folder.
+Reads every resume file (.txt, .pdf, or .docx) from the input folder and
+writes an ATS-friendly CV (.docx/.pdf) plus stage JSON for each resume into
+the output folder. The job description file may also be .txt, .pdf, or .docx.
 
   -jd given:    each CV is matched against that job description and tailored
                 to it (GenerateCV), using only evidence the resume can prove.
@@ -29,6 +30,7 @@ from pathlib import Path
 
 sys.stdout.reconfigure(encoding="utf-8")
 
+from document_reader import read_text, SUPPORTED_EXTENSIONS
 from extract_and_parse import ExtractResume, ParseJob
 from generate_profile_cv import ProfessionalCVGenerator
 from match_skills import MatchSkills
@@ -41,11 +43,12 @@ from json_utils import save_json, load_json
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate ATS-friendly CVs, optionally tailored to a job.")
-    parser.add_argument("-input", dest="input_dir", required=True, help="Folder containing resume .txt files")
+    parser.add_argument("-input", dest="input_dir", required=True,
+                         help="Folder containing resume files (.txt, .pdf, or .docx)")
     parser.add_argument("-output", dest="output_dir", required=True, help="Folder to write generated CVs and stage JSON")
     parser.add_argument("-jd", dest="jd_path", default=None,
-                         help="Path to a job description .txt file (optional - omit to polish each "
-                              "resume on its own, with no target job)")
+                         help="Path to a job description file (.txt, .pdf, or .docx - optional, "
+                              "omit to polish each resume on its own, with no target job)")
     parser.add_argument("-review", dest="review", action="store_true",
                          help="Interactively review/refine each generated CV before finalising it")
     return parser.parse_args()
@@ -112,7 +115,7 @@ def process_resume(resume_path, job_data, output_dir, extractor, matcher, retrie
     if extracted_path.exists():
         resume_data = load_json(extracted_path)
     else:
-        resume_data = extractor.run(resume_path.read_text(encoding="utf-8"))
+        resume_data = extractor.run(read_text(resume_path))
         if not resume_data:
             return "extraction failed: Llama 2 did not return valid JSON"
         save_json(extracted_path, resume_data)
@@ -176,9 +179,9 @@ def main():
         print(f"Input folder not found: {input_dir}")
         return
 
-    resume_files = sorted(input_dir.glob("*.txt"))
+    resume_files = sorted(p for ext in SUPPORTED_EXTENSIONS for p in input_dir.glob(f"*{ext}"))
     if not resume_files:
-        print(f"No resume .txt files found in {input_dir}")
+        print(f"No resume files ({', '.join(SUPPORTED_EXTENSIONS)}) found in {input_dir}")
         return
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -192,7 +195,12 @@ def main():
             print(f"Job description file not found: {jd_path}")
             return
         print(f"Parsing JD from {jd_path}")
-        job_data = ParseJob().run(jd_path.read_text(encoding="utf-8"))
+        try:
+            job_text = read_text(jd_path)
+        except ValueError as e:
+            print(f"Job description file not readable: {e}")
+            return
+        job_data = ParseJob().run(job_text)
         if not job_data:
             print("JD parsing failed: Llama 2 did not return valid JSON")
             return

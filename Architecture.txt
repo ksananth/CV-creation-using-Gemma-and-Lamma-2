@@ -15,20 +15,24 @@ Run:
                   (this is the mandatory core task: 10 profiles -> 10 CVs)
 
 Steps:
-1. Parse args (-input, -output, optional -jd); load every resume .txt in the
-   input folder.
-2. If -jd given: extract job description -> extract_and_parse.py : ParseJob
+1. Parse args (-input, -output, optional -jd); find every resume file
+   (.txt, .pdf, or .docx) in the input folder.
+2. Read raw text -> document_reader.py : read_text - dispatches by file
+   extension (pdfplumber for .pdf, python-docx for .docx, plain read for
+   .txt) so every downstream stage always sees plain text regardless of
+   the source format. Used for both resumes and the job description file.
+3. If -jd given: extract job description -> extract_and_parse.py : ParseJob
    (Llama 2) - job description text -> {title, company, required_skills,
    preferred_skills, responsibilities, ...}. Saved once as
    parsed_job_description.json.
    For each resume:
-3. Extract resume  -> extract_and_parse.py : ExtractResume (Llama 2)
+4. Extract resume  -> extract_and_parse.py : ExtractResume (Llama 2)
    - resume text -> {name, email, phone, experience, skills, education, ...}
    - resumable: skipped and loaded from disk if <stem>_extracted_resume.json
      already exists in the output folder.
-4. Quality check (extraction) -> quality_check.py : check_extraction
+5. Quality check (extraction) -> quality_check.py : check_extraction
    (rule-based, no LLM) - flags missing name/contact/experience/skills.
-5a. Tailored mode (-jd given):
+6a. Tailored mode (-jd given):
     - Match skills    -> match_skills.py : MatchSkills (pure Python, no LLM)
       normalises skill phrases (aliases, filler words, protected multi-word
       terms), computes required/preferred coverage %, produces
@@ -40,17 +44,17 @@ Steps:
       model sees ONLY job details + evidence + blocklist, never the raw
       resume; output {summary, experience[].bullets, ordered_skills}; a hard
       post-generation filter strips any blocklisted skill that slips through.
-5b. Profile mode (-jd omitted):
+6b. Profile mode (-jd omitted):
     - Generate CV      -> generate_profile_cv.py : ProfessionalCVGenerator
       (Gemma 3 1B) - no target job; only polishes the candidate's own stated
       facts (clearer summary, stronger action-verb bullets) - never invents
       employers, numbers, titles, or tools not already present.
     - Both generation steps are resumable the same way as extraction, via
       <stem>_generated_cv.json.
-6. Quality check (generated CV) -> quality_check.py : check_generated_cv
+7. Quality check (generated CV) -> quality_check.py : check_generated_cv
    (rule-based, no LLM) - flags empty summary, placeholder text, missing
    bullets, or an unrecognised company introduced into the generated CV.
-6a. User review and iterative revision (-review flag, optional): prints the
+7a. User review and iterative revision (-review flag, optional): prints the
     current CV, ATS coverage % (tailored mode), any matched-but-unrendered
     skills (skills match_skills.py confirmed but that didn't make it into
     this CV's Skills line), the fabrication blocklist, and quality_check
@@ -58,12 +62,12 @@ Steps:
     GenerateCV.refine / ProfessionalCVGenerator.refine to revise the CV
     under the same evidence/blocklist or candidate-facts constraint as the
     original generation, then repeats until the user accepts (Enter).
-7. Render documents -> render_document.py + document_style.py
+8. Render documents -> render_document.py + document_style.py
    - shared ATS-friendly styling: single column, standard font, plain black
      text, plain-text section headings, real bullet lists.
    - writes both .docx (python-docx) and .pdf (reportlab) from the same CV
      JSON, regardless of which mode produced it.
-8. Save outputs to -output folder: per-resume stage JSON
+9. Save outputs to -output folder: per-resume stage JSON
    (*_extracted_resume.json, [*_match.json, *_evidence.json,] *_generated_cv.json)
    plus the final CV docx/pdf, and (tailored mode only) one shared
    parsed_job_description.json.
@@ -71,6 +75,8 @@ Steps:
 ------------------------------------------------------------
 Shared building blocks
 ------------------------------------------------------------
+- document_reader.py: read_text - extracts plain text from .txt/.pdf/.docx
+                      resume and job-description files (pdfplumber, python-docx).
 - json_utils.py    : extract_json/invoke_json - pulls a JSON object out of an LLM
                       response, repairing common local-LLM mistakes (trailing commas,
                       dropped closing quotes), retries on failure; save_json/load_json.
